@@ -1,0 +1,42 @@
+# Logs
+*.log
+logs/
+*.log.*
+
+# Maven build directories
+target/
+*.class
+
+# Node modules (already in Frontend/.gitignore)
+node_modules/
+
+# Angular build artifacts
+dist/
+.angular/
+.angular/cache/
+
+# IDE files
+.idea/
+.vscode/
+*.iml
+*.iws
+*.ipr
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Temporary files
+*.tmp
+*.temp
+*.swp
+*.swo
+*~
+
+# Build artifacts
+build/
+out/
+
+# Environment files (keep template, ignore actual)
+.env
+!.env.example

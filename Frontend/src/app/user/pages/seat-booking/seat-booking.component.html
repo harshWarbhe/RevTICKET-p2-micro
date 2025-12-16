@@ -1,0 +1,124 @@
+<div class="seat-booking">
+  <!-- Loading State -->
+  <div *ngIf="loading()" class="loading">
+    <div class="spinner"></div>
+    <p>Loading seat availability...</p>
+  </div>
+
+  <!-- Error State -->
+  <div *ngIf="error()" class="error">
+    <div class="error-icon">⚠️</div>
+    <h2>Unable to Load Showtime</h2>
+    <p>{{ error() }}</p>
+    <button (click)="goBack()" class="btn-secondary">← Go Back to Home</button>
+  </div>
+
+  <!-- Main Content -->
+  <div *ngIf="!loading() && !error() && showtime()" class="content">
+    <!-- Header -->
+    <header class="header">
+      <button (click)="goBack()" class="back-btn">
+        <span class="back-icon">←</span>
+        <span>Back</span>
+      </button>
+      <div class="movie-info">
+        <h1 class="movie-title">{{ showtime()?.movie?.title }}</h1>
+        <div class="details">
+          <span class="detail-item">
+            <span class="detail-icon">🏢</span>
+            {{ getTheaterLabel() }}
+          </span>
+          <span class="detail-item">
+            <span class="detail-icon">📺</span>
+            {{ getScreenLabel() }}
+          </span>
+          <span class="detail-item">
+            <span class="detail-icon">📅</span>
+            {{ showtime()?.showDateTime | date:'EEE, MMM d' }}
+          </span>
+          <span class="detail-item">
+            <span class="detail-icon">🕐</span>
+            {{ showtime()?.showDateTime | date:'h:mm a' }}
+          </span>
+        </div>
+      </div>
+    </header>
+
+
+
+    <!-- Seat Selection -->
+    <main class="seat-selection">
+      <!-- Screen -->
+      <div class="screen">
+        <div class="screen-curve"></div>
+        <span class="screen-label">SCREEN THIS WAY</span>
+      </div>
+
+      <!-- Seats Grid -->
+      <div class="seats-grid">
+        <div *ngFor="let row of seatRows()" class="seat-row">
+          <span class="row-label">{{ row.row }}</span>
+          <div class="seats">
+            <ng-container *ngFor="let seat of row.seats">
+              <button
+                *ngIf="seat"
+                (click)="toggleSeat(seat)"
+                [class]="'seat ' + getSeatClass(seat)"
+                [disabled]="!isSeatClickable(seat)"
+                [title]="getSeatTooltip(seat)"
+                [attr.data-price]="seat.price">
+                <span class="seat-number">{{ seat.number }}</span>
+                <span class="seat-price" *ngIf="isSeatClickable(seat)">{{ settingsService.currencySymbol() }}{{ seat.price }}</span>
+              </button>
+              <div *ngIf="!seat" class="seat-gap"></div>
+            </ng-container>
+          </div>
+          <span class="row-label">{{ row.row }}</span>
+        </div>
+      </div>
+
+      <!-- Legend -->
+      <div class="legend">
+        <div class="legend-item">
+          <div class="seat-demo available"></div>
+          <span>Available</span>
+        </div>
+        <div class="legend-item">
+          <div class="seat-demo selected"></div>
+          <span>Selected</span>
+        </div>
+        <div class="legend-item">
+          <div class="seat-demo booked"></div>
+          <span>Booked</span>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <!-- Booking Summary -->
+  <div *ngIf="selectedSeatsList().length > 0" class="booking-summary">
+    <div class="summary-content">
+      <div class="selected-info">
+        <div class="seats-selected">
+          <span class="selected-icon">🎫</span>
+          <span class="selected-text">{{ selectedSeatsLabels().join(', ') }}</span>
+        </div>
+        <div class="seat-count">{{ selectedSeatsLabels().length }} seat(s) selected</div>
+      </div>
+      <div class="price-info">
+        <div class="price-breakdown">
+          <div class="total-row">
+            <span class="total-label">Total ({{ selectedSeatsLabels().length }} seats):</span>
+            <span class="total-amount">{{ settingsService.currencySymbol() }}{{ totalPrice() }}</span>
+          </div>
+        </div>
+        <button (click)="proceedToPayment()" class="btn-primary">
+          <span class="btn-icon">💳</span>
+          <span>Proceed to Payment</span>
+        </button>
+      </div>
+    </div>
+  </div>
+
+
+</div>

@@ -1,0 +1,55 @@
+<div class="all-movies-page">
+  <div class="page-header">
+    <div class="header-content">
+      <h1 class="page-title">All Movies</h1>
+      <p class="page-subtitle">{{ movies().length }} movies currently showing</p>
+    </div>
+  </div>
+
+  @if (loading()) {
+    <div class="loading-section">
+      <app-loader></app-loader>
+    </div>
+  }
+
+  @if (!loading() && movies().length === 0) {
+    <div class="empty-state">
+      <div class="empty-icon">🎬</div>
+      <h2>No Movies Available</h2>
+      <p>Check back later for new releases</p>
+    </div>
+  }
+
+  @if (!loading() && movies().length > 0) {
+    <div class="movies-container">
+      <div class="movies-grid">
+        @for (movie of movies(); track movie.id) {
+          <div class="movie-card" (click)="viewDetails(movie.id)">
+            <div class="card-poster">
+              <img [src]="movie.posterUrl" [alt]="movie.title">
+              @if (movie.rating) {
+                <div class="rating-badge">⭐ {{ movie.rating | number:'1.1-1' }}/5</div>
+              }
+            </div>
+            <div class="card-content">
+              <h3 class="movie-title">{{ movie.title }}</h3>
+              <div class="movie-meta">
+                <span class="duration">{{ movie.duration }}m</span>
+                <span class="language">{{ movie.language }}</span>
+              </div>
+              <div class="movie-genres">
+                @for (genre of movie.genre.slice(0, 2); track genre) {
+                  <span class="genre-tag">{{ genre }}</span>
+                }
+              </div>
+              <div class="card-actions">
+                <button class="btn-showtimes" (click)="viewShowtimes($event, movie.id)">Showtimes</button>
+                <button class="btn-book" (click)="bookNow($event, movie.id)">Book</button>
+              </div>
+            </div>
+          </div>
+        }
+      </div>
+    </div>
+  }
+</div>

@@ -1,0 +1,179 @@
+<div class="dashboard-page">
+  <!-- HEADER -->
+    <header class="main-header">
+      <div class="header-left">
+        <h1 class="page-title">Dashboard Overview</h1>
+        <p class="page-sub">Real-time analytics and insights</p>
+      </div>
+
+      <div class="header-actions">
+        <button class="refresh-btn" (click)="refreshData()" [disabled]="loading()" title="Refresh Data">
+          <span [class.spin]="loading()">🔄</span>
+          <span>{{ loading() ? 'Loading...' : 'Refresh' }}</span>
+        </button>
+      </div>
+    </header>
+
+    <!-- STATS ROW -->
+    @if (!loading()) {
+    <section class="stats-row fade-in">
+      <div class="stat-card revenue-card">
+        <div class="stat-icon">💰</div>
+        <div class="stat-info">
+          <div class="stat-meta">Total Revenue</div>
+          <div class="stat-value">{{ formatCurrency(stats().totalRevenue) }}</div>
+          <div class="stat-trend positive">+{{ getRevenueChange().value.toFixed(1) }}% from last period</div>
+        </div>
+      </div>
+
+      <div class="stat-card bookings-card">
+        <div class="stat-icon">🎫</div>
+        <div class="stat-info">
+          <div class="stat-meta">Total Bookings</div>
+          <div class="stat-value">{{ stats().totalBookings }}</div>
+          <div class="stat-trend positive">+{{ getBookingsChange().value.toFixed(1) }}% this month</div>
+        </div>
+      </div>
+
+      <div class="stat-card movies-card">
+        <div class="stat-icon">🎬</div>
+        <div class="stat-info">
+          <div class="stat-meta">Active Movies</div>
+          <div class="stat-value">{{ stats().activeMovies }}</div>
+          <div class="stat-sub">{{ stats().totalMovies }} total movies</div>
+        </div>
+      </div>
+
+      <div class="stat-card users-card">
+        <div class="stat-icon">👥</div>
+        <div class="stat-info">
+          <div class="stat-meta">Total Users</div>
+          <div class="stat-value">{{ stats().totalUsers }}</div>
+          <div class="stat-trend positive">+{{ getUsersChange().value.toFixed(1) }}% growth</div>
+        </div>
+      </div>
+    </section>
+    }
+
+    <!-- LOADING STATE -->
+    @if (loading()) {
+    <section class="loading-state">
+      <div class="spinner"></div>
+      <p>Loading dashboard data...</p>
+    </section>
+    }
+
+    <!-- MAIN GRID: Revenue Chart + Quick Actions -->
+    @if (!loading()) {
+    <section class="grid-main fade-in">
+      <!-- Revenue Chart Panel -->
+      <div class="panel chart-panel">
+        <div class="panel-header">
+          <h3 class="panel-title">📈 Revenue Analytics</h3>
+          <div class="period-controls">
+            <button class="period-btn" [class.active]="selectedPeriod() === 7" (click)="onPeriodChange(7)">
+              7d
+            </button>
+            <button class="period-btn" [class.active]="selectedPeriod() === 30" (click)="onPeriodChange(30)">
+              30d
+            </button>
+            <button class="period-btn" [class.active]="selectedPeriod() === 365" (click)="onPeriodChange(365)">
+              1y
+            </button>
+          </div>
+        </div>
+
+        <div class="panel-body">
+          <div class="chart-container">
+            @if (revenueData().length > 0) {
+            <div class="chart-bars">
+              @for (data of revenueData(); track data.date) {
+              <div class="bar-wrap">
+                <div class="bar" [style.height]="getBarHeight(data.revenue)" [class.has-revenue]="data.revenue > 0">
+                  <div class="bar-fill"></div>
+                  <div class="bar-tooltip">{{ data.revenue > 0 ? formatCurrency(data.revenue) : 'No revenue' }}</div>
+                </div>
+                <div class="bar-label">{{ getBarLabel(data.date) }}</div>
+              </div>
+              }
+            </div>
+            } @else {
+            <div class="empty-state">📊 No revenue data available for this period</div>
+            }
+          </div>
+        </div>
+      </div>
+
+      <!-- Quick Actions Panel -->
+      <aside class="panel actions-panel">
+        <div class="panel-header">
+          <h3 class="panel-title">⚡ Quick Actions</h3>
+        </div>
+        <div class="panel-body quick-links">
+          <a routerLink="/admin/add-movie" class="quick-link">
+            🎬 Add Movie
+          </a>
+          <a routerLink="/admin/manage-shows" class="quick-link">
+            📅 Add Show
+          </a>
+          <a routerLink="/admin/manage-theatres" class="quick-link">
+            🏢 Add Theatre
+          </a>
+          <a routerLink="/admin/users" class="quick-link">
+            👥 Manage Users
+          </a>
+        </div>
+      </aside>
+    </section>
+    }
+
+    <!-- RECENT ACTIVITY SECTION -->
+    @if (!loading()) {
+    <section class="recent-activity-section fade-in">
+      <div class="panel">
+        <div class="panel-header">
+          <h3 class="panel-title">🕐 Recent Activity</h3>
+          <button class="refresh-small-btn" (click)="loadRecentActivities()" title="Refresh Activity">
+            🔄
+          </button>
+        </div>
+
+        <div class="panel-body">
+          @if (recentActivities().length > 0) {
+          <div class="activity-list">
+            @for (act of recentActivities(); track act.timestamp) {
+            <div class="activity-item">
+              <div class="activity-icon">
+                @switch (act.type) {
+                @case ('booking') {
+                🎫
+                }
+                @case ('movie') {
+                🎬
+                }
+                @case ('user') {
+                👤
+                }
+                @case ('theater') {
+                🏢
+                }
+                @default {
+                📌
+                }
+                }
+              </div>
+              <div class="activity-content">
+                <div class="activity-message" [innerHTML]="act.message"></div>
+                <small class="activity-time">{{ getTimeAgo(act.timestamp) }}</small>
+              </div>
+            </div>
+            }
+          </div>
+          } @else {
+          <div class="empty-state">No recent activity</div>
+          }
+        </div>
+      </div>
+    </section>
+    }
+</div>

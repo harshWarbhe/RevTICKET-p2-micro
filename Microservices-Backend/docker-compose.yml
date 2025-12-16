@@ -1,0 +1,249 @@
+version: '3.8'
+
+services:
+  # Infrastructure Services
+  consul:
+    image: hashicorp/consul:1.15
+    ports:
+      - "8500:8500"
+    command: agent -server -bind=0.0.0.0 -client=0.0.0.0 -bootstrap-expect=1 -ui
+    networks:
+      - revticket-network
+
+  mysql:
+    image: mysql:8.0
+    ports:
+      - "3306:3306"
+    environment:
+      MYSQL_ROOT_PASSWORD: Admin123
+    volumes:
+      - mysql-data:/var/lib/mysql
+    networks:
+      - revticket-network
+
+  mongodb:
+    image: mongo:latest
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongo-data:/data/db
+    networks:
+      - revticket-network
+
+  # Microservices
+  api-gateway:
+    build:
+      context: .
+      dockerfile: api-gateway/Dockerfile
+    container_name: api-gateway
+    ports:
+      - "8080:8080"
+    environment:
+      - SPRING_CLOUD_CONSUL_HOST=consul
+      - SPRING_CLOUD_CONSUL_PORT=8500
+      - USER_SERVICE_URI=http://user-service:8081
+      - MOVIE_SERVICE_URI=http://movie-service:8082
+      - THEATER_SERVICE_URI=http://theater-service:8083
+      - SHOWTIME_SERVICE_URI=http://showtime-service:8084
+      - BOOKING_SERVICE_URI=http://booking-service:8085
+      - PAYMENT_SERVICE_URI=http://payment-service:8086
+      - REVIEW_SERVICE_URI=http://review-service:8087
+      - SEARCH_SERVICE_URI=http://search-service:8088
+      - NOTIFICATION_SERVICE_URI=http://notification-service:8089
+      - SETTINGS_SERVICE_URI=http://settings-service:8090
+      - DASHBOARD_SERVICE_URI=http://dashboard-service:8091
+    depends_on:
+      - consul
+    networks:
+      - revticket-network
+
+  user-service:
+    build:
+      context: .
+      dockerfile: user-service/Dockerfile
+    container_name: user-service
+    ports:
+      - "8081:8081"
+    environment:
+      - SPRING_CLOUD_CONSUL_HOST=consul
+      - SPRING_CLOUD_CONSUL_PORT=8500
+      - SPRING_DATASOURCE_URL=jdbc:mysql://mysql:3306/user_service_db?createDatabaseIfNotExist=true&useSSL=false&allowPublicKeyRetrieval=true
+    depends_on:
+      - consul
+      - mysql
+    networks:
+      - revticket-network
+
+  movie-service:
+    build:
+      context: .
+      dockerfile: movie-service/Dockerfile
+    container_name: movie-service
+    ports:
+      - "8082:8082"
+    environment:
+      - SPRING_CLOUD_CONSUL_HOST=consul
+      - SPRING_CLOUD_CONSUL_PORT=8500
+      - SPRING_DATASOURCE_URL=jdbc:mysql://mysql:3306/movie_service_db?createDatabaseIfNotExist=true&useSSL=false&allowPublicKeyRetrieval=true
+    depends_on:
+      - consul
+      - mysql
+    networks:
+      - revticket-network
+
+  theater-service:
+    build:
+      context: .
+      dockerfile: theater-service/Dockerfile
+    container_name: theater-service
+    ports:
+      - "8083:8083"
+    environment:
+      - SPRING_CLOUD_CONSUL_HOST=consul
+      - SPRING_CLOUD_CONSUL_PORT=8500
+      - SPRING_DATASOURCE_URL=jdbc:mysql://mysql:3306/theater_service_db?createDatabaseIfNotExist=true&useSSL=false&allowPublicKeyRetrieval=true
+    depends_on:
+      - consul
+      - mysql
+    networks:
+      - revticket-network
+
+  showtime-service:
+    build:
+      context: .
+      dockerfile: showtime-service/Dockerfile
+    container_name: showtime-service
+    ports:
+      - "8084:8084"
+    environment:
+      - SPRING_CLOUD_CONSUL_HOST=consul
+      - SPRING_CLOUD_CONSUL_PORT=8500
+      - SPRING_DATASOURCE_URL=jdbc:mysql://mysql:3306/showtime_service_db?createDatabaseIfNotExist=true&useSSL=false&allowPublicKeyRetrieval=true
+    depends_on:
+      - consul
+      - mysql
+    networks:
+      - revticket-network
+
+  booking-service:
+    build:
+      context: .
+      dockerfile: booking-service/Dockerfile
+    container_name: booking-service
+    ports:
+      - "8085:8085"
+    environment:
+      - SPRING_CLOUD_CONSUL_HOST=consul
+      - SPRING_CLOUD_CONSUL_PORT=8500
+      - SPRING_DATASOURCE_URL=jdbc:mysql://mysql:3306/booking_service_db?createDatabaseIfNotExist=true&useSSL=false&allowPublicKeyRetrieval=true
+    depends_on:
+      - consul
+      - mysql
+    networks:
+      - revticket-network
+
+  payment-service:
+    build:
+      context: .
+      dockerfile: payment-service/Dockerfile
+    container_name: payment-service
+    ports:
+      - "8086:8086"
+    environment:
+      - SPRING_CLOUD_CONSUL_HOST=consul
+      - SPRING_CLOUD_CONSUL_PORT=8500
+      - SPRING_DATASOURCE_URL=jdbc:mysql://mysql:3306/payment_service_db?createDatabaseIfNotExist=true&useSSL=false&allowPublicKeyRetrieval=true
+    depends_on:
+      - consul
+      - mysql
+    networks:
+      - revticket-network
+
+  review-service:
+    build:
+      context: .
+      dockerfile: review-service/Dockerfile
+    container_name: review-service
+    ports:
+      - "8087:8087"
+    environment:
+      - SPRING_CLOUD_CONSUL_HOST=consul
+      - SPRING_CLOUD_CONSUL_PORT=8500
+      - MONGODB_URI=mongodb://mongodb:27017/review_service_db
+    depends_on:
+      - consul
+      - mongodb
+    networks:
+      - revticket-network
+
+  search-service:
+    build:
+      context: .
+      dockerfile: search-service/Dockerfile
+    container_name: search-service
+    ports:
+      - "8088:8088"
+    environment:
+      - SPRING_CLOUD_CONSUL_HOST=consul
+      - SPRING_CLOUD_CONSUL_PORT=8500
+    depends_on:
+      - consul
+    networks:
+      - revticket-network
+
+  notification-service:
+    build:
+      context: .
+      dockerfile: notification-service/Dockerfile
+    container_name: notification-service
+    ports:
+      - "8089:8089"
+    environment:
+      - SPRING_CLOUD_CONSUL_HOST=consul
+      - SPRING_CLOUD_CONSUL_PORT=8500
+      - MONGODB_URI=mongodb://mongodb:27017/notification_service_db
+    depends_on:
+      - consul
+      - mongodb
+    networks:
+      - revticket-network
+
+  settings-service:
+    build:
+      context: .
+      dockerfile: settings-service/Dockerfile
+    container_name: settings-service
+    ports:
+      - "8090:8090"
+    environment:
+      - SPRING_CLOUD_CONSUL_HOST=consul
+      - SPRING_CLOUD_CONSUL_PORT=8500
+      - SPRING_DATASOURCE_URL=jdbc:mysql://mysql:3306/settings_service_db?createDatabaseIfNotExist=true&useSSL=false&allowPublicKeyRetrieval=true
+    depends_on:
+      - consul
+      - mysql
+    networks:
+      - revticket-network
+
+  dashboard-service:
+    build:
+      context: .
+      dockerfile: dashboard-service/Dockerfile
+    container_name: dashboard-service
+    ports:
+      - "8091:8091"
+    environment:
+      - SPRING_CLOUD_CONSUL_HOST=consul
+      - SPRING_CLOUD_CONSUL_PORT=8500
+    depends_on:
+      - consul
+    networks:
+      - revticket-network
+
+networks:
+  revticket-network:
+    driver: bridge
+
+volumes:
+  mysql-data:
+  mongo-data:

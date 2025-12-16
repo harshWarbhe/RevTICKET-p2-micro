@@ -1,0 +1,144 @@
+<div class="login-container">
+  <div class="login-wrapper">
+    <div class="login-visual">
+      <div class="visual-content">
+        <h2 class="visual-title">Welcome Back to RevTicket</h2>
+        <p class="visual-subtitle">Your premium movie booking experience awaits</p>
+        <div class="visual-features">
+          <div class="feature-item">
+            <span class="feature-icon">🎬</span>
+            <span>Latest Movies</span>
+          </div>
+          <div class="feature-item">
+            <span class="feature-icon">💺</span>
+            <span>Best Seats</span>
+          </div>
+          <div class="feature-item">
+            <span class="feature-icon">⚡</span>
+            <span>Instant Booking</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="login-form-section">
+      <div class="form-container">
+        <div class="form-header">
+          <h1 class="form-title">Login</h1>
+          <p class="form-subtitle">Enter your credentials to access your account</p>
+        </div>
+
+        <form [formGroup]="loginForm" (ngSubmit)="onSubmit()" class="login-form">
+          <div class="form-group">
+            <label for="email" class="form-label">Email Address</label>
+            <div class="input-wrapper">
+              <span class="input-icon" aria-hidden="true">📧</span>
+              <input 
+                type="email" 
+                id="email" 
+                name="email"
+                formControlName="email" 
+                class="form-input" 
+                placeholder="Enter your email"
+                autocomplete="email"
+                [class.error]="loginForm.get('email')?.invalid && loginForm.get('email')?.touched"
+                aria-required="true"
+                aria-describedby="email-error">
+            </div>
+            @if (loginForm.get('email')?.invalid && loginForm.get('email')?.touched) {
+              <div id="email-error" class="error-message" role="alert">
+                @if (loginForm.get('email')?.hasError('required')) {
+                  <span>Email is required</span>
+                }
+                @if (loginForm.get('email')?.hasError('email')) {
+                  <span>Please enter a valid email address</span>
+                }
+              </div>
+            }
+          </div>
+
+          <div class="form-group">
+            <label for="password" class="form-label">Password</label>
+            <div class="input-wrapper password-wrapper">
+              <span class="input-icon" aria-hidden="true">🔒</span>
+              <input 
+                [type]="showPassword() ? 'text' : 'password'" 
+                id="password" 
+                name="password"
+                formControlName="password" 
+                class="form-input password-input"
+                placeholder="Enter your password"
+                autocomplete="current-password"
+                [class.error]="loginForm.get('password')?.invalid && loginForm.get('password')?.touched"
+                aria-required="true"
+                aria-describedby="password-error">
+              <button 
+                type="button" 
+                class="toggle-password" 
+                (click)="togglePasswordVisibility()"
+                [attr.aria-label]="showPassword() ? 'Hide password' : 'Show password'"
+                tabindex="0">
+                @if (!showPassword()) {
+                  <span>👁️</span>
+                } @else {
+                  <span>🙈</span>
+                }
+              </button>
+            </div>
+            @if (loginForm.get('password')?.invalid && loginForm.get('password')?.touched) {
+              <div id="password-error" class="error-message" role="alert">
+                @if (loginForm.get('password')?.hasError('required')) {
+                  <span>Password is required</span>
+                }
+                @if (loginForm.get('password')?.hasError('minlength')) {
+                  <span>Password must be at least 6 characters</span>
+                }
+              </div>
+            }
+          </div>
+
+          @if (error()) {
+            <div class="error-message server-error" role="alert" aria-live="polite">
+              <span class="error-icon" aria-hidden="true">⚠️</span>
+              {{ error() }}
+            </div>
+          }
+
+          <button 
+            type="submit" 
+            class="submit-btn" 
+            [disabled]="loginForm.invalid || loading()"
+            [attr.aria-busy]="loading()">
+            @if (!loading()) {
+              <span>Login</span>
+            } @else {
+              <span class="loading-spinner" role="status" aria-label="Logging in">Logging in...</span>
+            }
+          </button>
+        </form>
+
+        <div class="divider">
+          <span>OR</span>
+        </div>
+
+        <button type="button" class="google-btn" (click)="loginWithGoogle()" [disabled]="loading()">
+          <svg width="18" height="18" viewBox="0 0 18 18">
+            <path fill="#4285F4" d="M17.64 9.2c0-.637-.057-1.251-.164-1.84H9v3.481h4.844c-.209 1.125-.843 2.078-1.796 2.717v2.258h2.908c1.702-1.567 2.684-3.874 2.684-6.615z"/>
+            <path fill="#34A853" d="M9 18c2.43 0 4.467-.806 5.956-2.184l-2.908-2.258c-.806.54-1.837.86-3.048.86-2.344 0-4.328-1.584-5.036-3.711H.957v2.332C2.438 15.983 5.482 18 9 18z"/>
+            <path fill="#FBBC05" d="M3.964 10.707c-.18-.54-.282-1.117-.282-1.707s.102-1.167.282-1.707V4.961H.957C.347 6.175 0 7.55 0 9s.348 2.825.957 4.039l3.007-2.332z"/>
+            <path fill="#EA4335" d="M9 3.58c1.321 0 2.508.454 3.44 1.345l2.582-2.58C13.463.891 11.426 0 9 0 5.482 0 2.438 2.017.957 4.961L3.964 7.293C4.672 5.163 6.656 3.58 9 3.58z"/>
+          </svg>
+          <span>Continue with Google</span>
+        </button>
+
+        <div class="form-footer">
+          <a routerLink="/auth/forgot-password" class="forgot-link">Forgot your password?</a>
+          <p class="signup-text">
+            Don't have an account?
+            <a routerLink="/auth/signup" class="signup-link">Create one</a>
+          </p>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

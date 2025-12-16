@@ -1,0 +1,205 @@
+<div class="dashboard-page">
+  <!-- HEADER -->
+  <header class="main-header">
+    <div class="header-left">
+      <h1 class="page-title">📊 Bookings Report</h1>
+      <p class="page-sub">Comprehensive booking analytics and insights</p>
+    </div>
+
+    <div class="header-actions">
+      <button class="refresh-btn" (click)="exportCSV()" [disabled]="loading()" title="Export CSV">
+        <span>📥</span>
+        <span>Export CSV</span>
+      </button>
+      <button class="refresh-btn" (click)="loadData()" [disabled]="loading()" title="Refresh Data">
+        <span [class.spin]="loading()">🔄</span>
+        <span>{{ loading() ? 'Loading...' : 'Refresh' }}</span>
+      </button>
+    </div>
+  </header>
+
+  <!-- LOADING STATE -->
+  @if (loading()) {
+    <section class="loading-state">
+      <div class="spinner"></div>
+      <p>Loading bookings data...</p>
+    </section>
+  }
+
+  <!-- STATS ROW -->
+  @if (!loading()) {
+    <section class="stats-row fade-in">
+      <div class="stat-card">
+        <div class="stat-meta">Total Bookings</div>
+        <div class="stat-value">{{ summary().totalBookings }}</div>
+      </div>
+
+      <div class="stat-card">
+        <div class="stat-meta">Total Revenue</div>
+        <div class="stat-value">{{ formatCurrency(summary().totalRevenue) }}</div>
+      </div>
+
+      <div class="stat-card">
+        <div class="stat-meta">Today's Bookings</div>
+        <div class="stat-value">{{ summary().todayBookings }}</div>
+      </div>
+
+      <div class="stat-card">
+        <div class="stat-meta">Cancelled</div>
+        <div class="stat-value">{{ summary().cancelledBookings }}</div>
+      </div>
+    </section>
+  }
+
+  <!-- FILTERS PANEL -->
+  @if (!loading()) {
+    <section class="panel fade-in" style="margin-bottom: 28px;">
+      <div class="panel-header">
+        <h3 class="panel-title">🔍 Filters</h3>
+      </div>
+      <div class="panel-body">
+        <div class="filters-grid">
+          <div class="filter-group">
+            <label>From Date</label>
+            <input type="date" [ngModel]="fromDate()" (ngModelChange)="fromDate.set($event); onFilterChange()">
+          </div>
+
+          <div class="filter-group">
+            <label>To Date</label>
+            <input type="date" [ngModel]="toDate()" (ngModelChange)="toDate.set($event); onFilterChange()">
+          </div>
+
+          <div class="filter-group">
+            <label>Movie</label>
+            <select [ngModel]="selectedMovie()" (ngModelChange)="selectedMovie.set($event); onFilterChange()">
+              <option value="">All Movies</option>
+              @for (movie of movies(); track movie.id) {
+                <option [value]="movie.id">{{ movie.title }}</option>
+              }
+            </select>
+          </div>
+
+          <div class="filter-group">
+            <label>Theater</label>
+            <select [ngModel]="selectedTheater()" (ngModelChange)="selectedTheater.set($event); onFilterChange()">
+              <option value="">All Theaters</option>
+              @for (theater of theaters(); track theater.id) {
+                <option [value]="theater.id">{{ theater.name }}</option>
+              }
+            </select>
+          </div>
+
+          <div class="filter-group">
+            <label>Status</label>
+            <select [ngModel]="selectedStatus()" (ngModelChange)="selectedStatus.set($event); onFilterChange()">
+              <option value="">All Status</option>
+              <option value="CONFIRMED">Confirmed</option>
+              <option value="CANCELLED">Cancelled</option>
+              <option value="PENDING">Pending</option>
+            </select>
+          </div>
+
+          <div class="filter-group">
+            <label>Search</label>
+            <input type="text" placeholder="Search by name, email, ID..." 
+              [ngModel]="searchTerm()" 
+              (ngModelChange)="searchTerm.set($event); onFilterChange()">
+          </div>
+        </div>
+      </div>
+    </section>
+  }
+
+  <!-- BOOKINGS TABLE -->
+  @if (!loading()) {
+    <section class="panel fade-in">
+      <div class="panel-header">
+        <h3 class="panel-title">📋 Bookings List</h3>
+        <div class="panel-meta">{{ totalElements() }} total bookings</div>
+      </div>
+
+      <div class="panel-body" style="padding: 0;">
+        <div class="table-wrapper">
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th>Booking ID</th>
+                <th>Customer</th>
+                <th>Movie</th>
+                <th>Theater</th>
+                <th>Show Date</th>
+                <th>Seats</th>
+                <th>Amount</th>
+                <th>Status</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              @for (booking of bookings(); track booking.id) {
+                <tr>
+                  <td class="booking-id">#{{ booking.id.substring(0, 8) }}</td>
+                  <td>
+                    <div class="customer-cell">
+                      <strong>{{ booking.customerName }}</strong>
+                      <small>{{ booking.customerEmail }}</small>
+                    </div>
+                  </td>
+                  <td class="movie-cell">{{ booking.movieTitle }}</td>
+                  <td>
+                    <div class="theater-cell">
+                      <div>{{ booking.theaterName }}</div>
+                      <small>{{ getScreenLabel(booking.screen) }}</small>
+                    </div>
+                  </td>
+                  <td class="date-cell">{{ booking.showtime | date:'MMM dd, h:mm a' }}</td>
+                  <td>
+                    <div class="seats-cell">
+                      <strong>{{ booking.seats.length }} seats</strong>
+                      <small>{{ getSeatLabels(booking.seats) }}</small>
+                    </div>
+                  </td>
+                  <td class="amount-cell">{{ formatCurrency(booking.totalAmount) }}</td>
+                  <td>
+                    <span class="status-badge" [class]="getStatusClass(booking.status)">
+                      {{ booking.status }}
+                    </span>
+                  </td>
+                  <td>
+                    <button class="action-btn delete-btn" (click)="deleteBooking(booking)" title="Delete Booking">
+                      🗑️
+                    </button>
+                  </td>
+                </tr>
+              } @empty {
+                <tr>
+                  <td colspan="9" class="empty-state">
+                    <div class="empty-icon">📭</div>
+                    <div>No bookings found</div>
+                    <small>Try adjusting your filters</small>
+                  </td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        </div>
+
+        @if (totalElements() > 0) {
+          <div class="table-footer">
+            <div class="pagination-info">
+              Showing {{ getStartIndex() }} to {{ getEndIndex() }} of {{ totalElements() }} bookings
+            </div>
+            <div class="pagination-controls">
+              <button class="page-btn" [disabled]="currentPage() === 0" (click)="previousPage()">
+                ← Previous
+              </button>
+              <span class="page-info">Page {{ currentPage() + 1 }} of {{ totalPages() }}</span>
+              <button class="page-btn" [disabled]="currentPage() >= totalPages() - 1" (click)="nextPage()">
+                Next →
+              </button>
+            </div>
+          </div>
+        }
+      </div>
+    </section>
+  }
+</div>

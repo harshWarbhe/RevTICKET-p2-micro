@@ -1,0 +1,15 @@
+@if (isLoading()) {
+  <div class="loader-overlay">
+    <div class="loader-container">
+      <div class="loader">
+        <div class="loader-ring"></div>
+        <div class="loader-ring"></div>
+        <div class="loader-ring"></div>
+        <div class="loader-text">
+          <span class="brand">RevTicket</span>
+          <span class="message">{{ message() || 'Loading...' }}</span>
+        </div>
+      </div>
+    </div>
+  </div>
+}

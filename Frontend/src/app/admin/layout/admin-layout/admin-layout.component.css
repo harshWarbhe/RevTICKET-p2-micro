@@ -1,0 +1,13 @@
+.admin-layout {
+  display: flex;
+  min-height: 100vh;
+  background: linear-gradient(135deg, #1f242d 0%, #20232b 100%);
+}
+
+.admin-content {
+  flex: 1;
+  overflow-y: auto;
+  min-width: 0;
+  background: #f5f7fa;
+  box-shadow: -4px 0 12px rgba(0, 0, 0, 0.08);
+}

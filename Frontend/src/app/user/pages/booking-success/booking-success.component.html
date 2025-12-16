@@ -1,0 +1,123 @@
+<div class="booking-success-container" *ngIf="booking(); else loadingState">
+  <div class="success-card">
+    <div class="success-header">
+      <div class="success-icon">
+        <div class="checkmark">
+          <div class="checkmark-circle"></div>
+          <div class="checkmark-stem"></div>
+          <div class="checkmark-kick"></div>
+        </div>
+      </div>
+      <h1>Booking Confirmed!</h1>
+      <p>Your tickets are ready. Enjoy the movie!</p>
+    </div>
+
+    <div class="booking-details">
+      <div class="detail-section">
+        <h3>Booking Information</h3>
+        <div class="detail-grid">
+          <div class="detail-item">
+            <span class="label">Booking ID</span>
+            <span class="value">#{{ booking()!.id }}</span>
+          </div>
+          <div class="detail-item">
+            <span class="label">Movie</span>
+            <span class="value">{{ booking()!.movieTitle }}</span>
+          </div>
+          <div class="detail-item">
+            <span class="label">Theater</span>
+            <span class="value">{{ booking()!.theaterName }}</span>
+          </div>
+          <div class="detail-item" *ngIf="booking()!.screen">
+            <span class="label">Screen</span>
+            <span class="value">{{ booking()!.screen }}</span>
+          </div>
+          <div class="detail-item">
+            <span class="label">Date & Time</span>
+            <span class="value">{{ booking()!.showtime | date:'MMM dd, yyyy - h:mm a' }}</span>
+          </div>
+          <div class="detail-item">
+            <span class="label">Seats</span>
+            <span class="value">{{ (booking()!.seatLabels || booking()!.seats).join(', ') }}</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="detail-section">
+        <h3>Payment Summary</h3>
+        <div class="payment-breakdown">
+          <div class="payment-row" *ngIf="booking()!.ticketPrice">
+            <span>Tickets ({{ booking()!.seats.length }} × ₹{{ booking()!.ticketPrice }})</span>
+            <span>₹{{ booking()!.seats.length * (booking()!.ticketPrice || 0) }}</span>
+          </div>
+          <div class="payment-row" *ngIf="booking()!.convenienceFee">
+            <span>Convenience Fee</span>
+            <span>₹{{ booking()!.convenienceFee }}</span>
+          </div>
+          <div class="payment-row" *ngIf="booking()!.gst">
+            <span>GST</span>
+            <span>₹{{ booking()!.gst }}</span>
+          </div>
+          <div class="payment-row total">
+            <span>Total Amount</span>
+            <span>₹{{ booking()!.totalAmount }}</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="success-actions">
+      <button class="btn-primary" (click)="downloadTicket()">
+        <span class="icon">📄</span>
+        Download Ticket
+      </button>
+      <button class="btn-secondary" (click)="sendToEmail()">
+        <span class="icon">📧</span>
+        Email Ticket
+      </button>
+      <button class="btn-secondary" routerLink="/user/my-bookings">
+        <span class="icon">📋</span>
+        View My Bookings
+      </button>
+    </div>
+
+    <div class="next-steps">
+      <h4>What's Next?</h4>
+      <div class="steps">
+        <div class="step">
+          <div class="step-icon">📱</div>
+          <div class="step-content">
+            <h5>Save Your Ticket</h5>
+            <p>Download or email the ticket for quick access.</p>
+          </div>
+        </div>
+        <div class="step">
+          <div class="step-icon">🎬</div>
+          <div class="step-content">
+            <h5>Arrive Early</h5>
+            <p>Reach 15 minutes before showtime for hassle-free entry.</p>
+          </div>
+        </div>
+        <div class="step">
+          <div class="step-icon">🎟️</div>
+          <div class="step-content">
+            <h5>Show Your Ticket</h5>
+            <p>Present the QR code at the entrance.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="back-home">
+      <button class="btn-outline" routerLink="/user/home">
+        ← Back to Movies
+      </button>
+    </div>
+  </div>
+</div>
+
+<ng-template #loadingState>
+  <div class="booking-success-container">
+    <p>Loading booking details...</p>
+  </div>
+</ng-template>

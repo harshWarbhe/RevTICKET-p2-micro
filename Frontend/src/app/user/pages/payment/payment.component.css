@@ -1,0 +1,355 @@
+.payment-container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0;
+  background: #f5f5f5;
+  min-height: 100vh;
+}
+
+.payment-header {
+  background: #fff;
+  padding: 1rem 2rem;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+  position: sticky;
+  top: 0;
+  z-index: 100;
+}
+
+.payment-header h1 {
+  font-size: 1.5rem;
+  font-weight: 600;
+  color: #333;
+  margin: 0.5rem 0 0 0;
+}
+
+.back-button {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem 1rem;
+  background: transparent;
+  border: none;
+  color: #333;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.back-button:hover {
+  color: #e50914;
+}
+
+.back-button svg {
+  flex-shrink: 0;
+}
+
+.payment-grid {
+  display: grid;
+  grid-template-columns: 1fr 400px;
+  gap: 0;
+  padding: 2rem;
+  align-items: start;
+}
+
+.payment-card {
+  background: #fff;
+  border-radius: 8px;
+  padding: 2rem;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+}
+
+.summary-card {
+  background: #fff;
+  border-radius: 8px;
+  padding: 1.5rem;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+  position: sticky;
+  top: 100px;
+}
+
+.summary-card h2 {
+  margin: 0 0 1rem 0;
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: #333;
+  border-bottom: 1px solid #e5e5e5;
+  padding-bottom: 0.75rem;
+}
+
+.payment-card h2 {
+  margin-top: 0;
+  margin-bottom: 1.5rem;
+  font-size: 1.5rem;
+  font-weight: 600;
+  color: #333;
+}
+
+.movie-info {
+  margin-bottom: 1.5rem;
+}
+
+.movie-info h3 {
+  margin: 0 0 0.5rem 0;
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: #333;
+}
+
+.movie-info p {
+  margin: 0.25rem 0;
+  color: #666;
+  font-size: 0.9rem;
+}
+
+.seat-info {
+  margin: 1rem 0;
+  padding: 1rem;
+  background: #fafafa;
+  border-radius: 6px;
+  border: 1px solid #e5e5e5;
+}
+
+.seat-info .label {
+  font-size: 0.8rem;
+  color: #666;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  margin-bottom: 0.5rem;
+}
+
+.seat-info .value {
+  font-size: 1rem;
+  font-weight: 600;
+  color: #333;
+}
+
+.cost-breakdown {
+  margin-top: 1.5rem;
+}
+
+.cost-breakdown .row {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 0.75rem;
+  color: #666;
+  font-size: 0.9rem;
+}
+
+.cost-breakdown .row.total {
+  font-weight: 700;
+  color: #333;
+  font-size: 1.1rem;
+  border-top: 2px dashed #e5e5e5;
+  padding-top: 1rem;
+  margin-top: 1rem;
+}
+
+.contact-form,
+.payment-form {
+  margin-bottom: 2rem;
+}
+
+.contact-form .form-row,
+.payment-form .form-row {
+  display: flex;
+  flex-direction: column;
+  margin-bottom: 1.25rem;
+}
+
+.contact-form label,
+.payment-form label {
+  font-weight: 500;
+  margin-bottom: 0.5rem;
+  color: #333;
+  font-size: 0.9rem;
+}
+
+.contact-form input,
+.payment-form input,
+.payment-form select {
+  padding: 0.875rem;
+  border-radius: 6px;
+  border: 1px solid #d1d5db;
+  font-size: 0.95rem;
+  background: #fff;
+  transition: border-color 0.2s;
+}
+
+.contact-form input:focus,
+.payment-form input:focus,
+.payment-form select:focus {
+  outline: none;
+  border-color: #e50914;
+  box-shadow: 0 0 0 3px rgba(229, 9, 20, 0.1);
+}
+
+.contact-form input.ng-invalid.ng-touched,
+.payment-form input.ng-invalid.ng-touched,
+.payment-form select.ng-invalid.ng-touched {
+  border-color: #dc2626;
+}
+
+.contact-form input.ng-valid.ng-touched,
+.payment-form input.ng-valid.ng-touched,
+.payment-form select.ng-valid.ng-touched {
+  border-color: #10b981;
+}
+
+.two-column {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: 1rem;
+}
+
+.two-column > div {
+  display: flex;
+  flex-direction: column;
+}
+
+.payment-info {
+  margin-bottom: 2rem;
+  padding: 1.5rem;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  border-radius: 8px;
+  color: #fff;
+  text-align: center;
+}
+
+.payment-info h3 {
+  margin: 0 0 0.5rem 0;
+  font-size: 1.2rem;
+  font-weight: 600;
+}
+
+.payment-info p {
+  margin: 0;
+  font-size: 0.9rem;
+  opacity: 0.95;
+}
+
+.payment-actions {
+  margin-top: 2rem;
+  border-top: 1px solid #e5e5e5;
+  padding-top: 1.5rem;
+}
+
+.payment-actions .pay-button span {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+}
+
+.pay-button {
+  width: 100%;
+  background: #e50914;
+  border: none;
+  color: #fff;
+  padding: 1rem 1.5rem;
+  border-radius: 6px;
+  font-size: 1.1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  box-shadow: 0 2px 8px rgba(229, 9, 20, 0.3);
+}
+
+.pay-button:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.pay-button:not(:disabled):hover {
+  background: #c40812;
+  box-shadow: 0 4px 12px rgba(229, 9, 20, 0.4);
+}
+
+.secure-note {
+  text-align: center;
+  margin-top: 1rem;
+  font-size: 0.85rem;
+  color: #666;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+}
+
+.missing-booking {
+  min-height: 70vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #fff;
+}
+
+.missing-content {
+  text-align: center;
+  max-width: 450px;
+  padding: 2rem;
+}
+
+.missing-content svg {
+  color: #e50914;
+  margin-bottom: 1.5rem;
+}
+
+.missing-content h2 {
+  font-size: 1.75rem;
+  color: #333;
+  margin-bottom: 0.75rem;
+  font-weight: 600;
+}
+
+.missing-content p {
+  color: #666;
+  margin-bottom: 2rem;
+  font-size: 1rem;
+}
+
+.missing-content .pay-button {
+  max-width: 220px;
+  margin: 0 auto;
+}
+
+@media (max-width: 1024px) {
+  .payment-grid {
+    grid-template-columns: 1fr;
+    padding: 1rem;
+  }
+  
+  .summary-card {
+    position: static;
+    order: 2;
+    margin-top: 1rem;
+  }
+  
+  .payment-card {
+    order: 1;
+  }
+  
+  .payment-header {
+    padding: 1rem;
+  }
+  
+  .payment-header h1 {
+    font-size: 1.25rem;
+  }
+  
+  .method-options {
+    grid-template-columns: 1fr;
+  }
+  
+  .upi-apps {
+    grid-template-columns: 1fr;
+  }
+  
+  .two-column {
+    grid-template-columns: 1fr;
+  }
+  
+  .payment-card,
+  .summary-card {
+    padding: 1.25rem;
+  }
+}

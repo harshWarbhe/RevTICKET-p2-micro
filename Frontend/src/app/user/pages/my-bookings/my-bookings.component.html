@@ -1,0 +1,218 @@
+<div class="my-bookings-container">
+  <div class="page-header">
+    <div class="header-content">
+      <h1>My Bookings</h1>
+      <p>Manage your movie tickets and view booking history</p>
+    </div>
+    <div class="header-stats">
+      <div class="stat-card">
+        <span class="stat-value">{{ bookings().length }}</span>
+        <span class="stat-label">Total</span>
+      </div>
+      <div class="stat-card">
+        <span class="stat-value">{{ getUpcomingCount() }}</span>
+        <span class="stat-label">Upcoming</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="bookings-filters">
+    <div class="filter-tabs">
+      <button 
+        class="filter-tab" 
+        [class.active]="activeFilter() === 'all'"
+        (click)="setFilter('all')">
+        <span class="tab-icon">📋</span>
+        <span class="tab-text">All</span>
+        <span class="tab-count">{{ bookings().length }}</span>
+      </button>
+      <button 
+        class="filter-tab" 
+        [class.active]="activeFilter() === 'upcoming'"
+        (click)="setFilter('upcoming')">
+        <span class="tab-icon">🎬</span>
+        <span class="tab-text">Upcoming</span>
+        <span class="tab-count">{{ getUpcomingCount() }}</span>
+      </button>
+      <button 
+        class="filter-tab" 
+        [class.active]="activeFilter() === 'past'"
+        (click)="setFilter('past')">
+        <span class="tab-icon">📅</span>
+        <span class="tab-text">Past</span>
+        <span class="tab-count">{{ getPastCount() }}</span>
+      </button>
+      <button 
+        class="filter-tab" 
+        [class.active]="activeFilter() === 'cancelled'"
+        (click)="setFilter('cancelled')">
+        <span class="tab-icon">❌</span>
+        <span class="tab-text">Cancelled</span>
+        <span class="tab-count">{{ getCancelledCount() }}</span>
+      </button>
+    </div>
+    
+    <div class="search-box">
+      <span class="search-icon">🔍</span>
+      <input 
+        type="text" 
+        placeholder="Search by movie, theater, or booking ID..." 
+        [(ngModel)]="searchTerm">
+    </div>
+  </div>
+
+  @if (loading()) {
+    <div class="loading-state">
+      Loading your bookings...
+    </div>
+  }
+
+  @if (!loading() && filteredBookings().length > 0) {
+    <div class="bookings-list">
+      @for (booking of filteredBookings(); track booking.id) {
+        <div class="booking-card" [class.past]="isPast(booking)" [class.cancelled]="booking.status === 'CANCELLED'">
+          <div class="card-ribbon" *ngIf="isUpcoming(booking) && booking.status === 'CONFIRMED'">
+            <span>Upcoming</span>
+          </div>
+          
+          <div class="booking-header">
+            <div class="movie-info">
+              <div class="poster-wrapper">
+                <img 
+                  [src]="booking.moviePosterUrl || 'assets/images/movies/default-poster.png'" 
+                  [alt]="booking.movieTitle"
+                  class="movie-poster"
+                  (error)="onImageError($event)">
+              </div>
+              <div class="movie-details">
+                <h3 class="movie-title">{{ booking.movieTitle }}</h3>
+                <div class="movie-meta">
+                  <span class="meta-item">
+                    <span class="meta-icon">🏢</span>
+                    {{ booking.theaterName }}
+                  </span>
+                  <span class="meta-item" *ngIf="booking.theaterLocation">
+                    <span class="meta-icon">📍</span>
+                    {{ booking.theaterLocation }}
+                  </span>
+                </div>
+              </div>
+            </div>
+            
+            <div class="booking-status">
+              <span class="status-badge" [ngClass]="'status-' + booking.status.toLowerCase()">
+                {{ getStatusLabel(booking.status) }}
+              </span>
+              <div class="booking-id">
+                <span class="id-label">Ticket:</span>
+                <span class="id-value">{{ booking.ticketNumber || booking.id.substring(0, 8).toUpperCase() }}</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="booking-details">
+            <div class="details-grid">
+              <div class="detail-item">
+                <span class="detail-icon">📺</span>
+                <div class="detail-content">
+                  <span class="detail-label">Screen</span>
+                  <span class="detail-value">{{ booking.screen || 'N/A' }}</span>
+                </div>
+              </div>
+              
+              <div class="detail-item">
+                <span class="detail-icon">📅</span>
+                <div class="detail-content">
+                  <span class="detail-label">Show Time</span>
+                  <span class="detail-value">{{ formatShowtime(booking.showtime) }}</span>
+                </div>
+              </div>
+              
+              <div class="detail-item">
+                <span class="detail-icon">💺</span>
+                <div class="detail-content">
+                  <span class="detail-label">Seats</span>
+                  <div class="seats-list">
+                    <span class="seat-badge" *ngFor="let seat of getSeatLabels(booking)">
+                      {{ seat }}
+                    </span>
+                  </div>
+                </div>
+              </div>
+              
+              <div class="detail-item">
+                <span class="detail-icon">💰</span>
+                <div class="detail-content">
+                  <span class="detail-label">Total Amount</span>
+                  <span class="detail-value amount">{{ formatCurrency(booking.totalAmount) }}</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="booking-actions">
+            @if (booking.status === 'CONFIRMED') {
+              <button class="action-btn btn-primary" (click)="viewTicket(booking)">
+                <span class="btn-icon">🎫</span>
+                <span class="btn-text">View E-Ticket</span>
+              </button>
+              
+              <button class="action-btn btn-danger" (click)="cancelBooking(booking)" [disabled]="!canCancel(booking)">
+                <span class="btn-icon">❌</span>
+                <span class="btn-text">{{ canCancel(booking) ? 'Cancel Booking' : 'Cannot Cancel' }}</span>
+              </button>
+            }
+            
+            @if (isPendingCancellation(booking)) {
+              <div class="status-alert alert-warning">
+                <span class="alert-icon">⏳</span>
+                <span class="alert-text">Cancellation pending admin approval</span>
+              </div>
+            }
+            
+            @if (booking.status === 'CANCELLED' && booking.refundAmount) {
+              <div class="status-alert alert-success">
+                <span class="alert-icon">✅</span>
+                <span class="alert-text">Refunded {{ formatCurrency(booking.refundAmount) }} on {{ formatDate(booking.refundDate!) }}</span>
+              </div>
+            }
+          </div>
+        </div>
+      }
+    </div>
+  }
+
+  @if (!loading() && filteredBookings().length === 0) {
+    <div class="empty-state">
+      <div class="empty-illustration">
+        <div class="empty-icon">🎫</div>
+        <div class="empty-circle"></div>
+      </div>
+      <h3 class="empty-title">{{ getEmptyStateTitle() }}</h3>
+      <p class="empty-message">{{ getEmptyStateMessage() }}</p>
+      @if (activeFilter() === 'all' && !searchTerm()) {
+        <button class="btn-primary" routerLink="/user/home">
+          <span class="btn-icon">🎬</span>
+          <span class="btn-text">Explore Movies</span>
+        </button>
+      }
+      @if (searchTerm()) {
+        <button class="btn-secondary" (click)="searchTerm.set('')">
+          <span class="btn-icon">🔄</span>
+          <span class="btn-text">Clear Search</span>
+        </button>
+      }
+    </div>
+  }
+
+  @if (showTicket()) {
+    <div class="modal-overlay" (click)="closeTicket()">
+      <div class="modal-content" (click)="$event.stopPropagation()">
+        <button class="close-btn" (click)="closeTicket()">×</button>
+        @if (selectedBooking()) {
+          <app-e-ticket [booking]="selectedBooking()!"></app-e-ticket>
+        }
+      </div>
+    </div>
+  }
+</div>

@@ -1,0 +1,72 @@
+server:
+  port: 8089
+
+spring:
+  application:
+    name: notification-service
+
+  data:
+    mongodb:
+      uri: ${MONGODB_URI:mongodb://localhost:27017/notification_service_db}
+      auto-index-creation: true
+
+  mail:
+    host: ${MAIL_HOST:smtp.gmail.com}
+    port: ${MAIL_PORT:587}
+    username: ${MAIL_USERNAME:harshwarbhe18@gmail.com}
+    password: ${MAIL_PASSWORD:hghtodqpoaubkqjh}
+    default-encoding: UTF-8
+    test-connection: false
+    properties:
+      mail:
+        smtp:
+          auth: true
+          starttls:
+            enable: true
+            required: true
+          ssl:
+            trust: smtp.gmail.com
+          connectiontimeout: 30000
+          timeout: 30000
+          writetimeout: 30000
+        debug: false
+
+  cloud:
+    consul:
+      host: localhost
+      port: 8500
+      discovery:
+        enabled: true
+        register: true
+        service-name: ${spring.application.name}
+        health-check-path: /actuator/health
+        health-check-interval: 10s
+        instance-id: ${spring.application.name}:${server.port}
+        hostname: localhost
+        prefer-ip-address: false
+
+app:
+  frontend:
+    url: ${FRONTEND_URL:http://localhost:4200}
+  admin:
+    email: ${ADMIN_EMAIL:admin@revticket.com}
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info
+  endpoint:
+    health:
+      show-details: always
+  health:
+    mail:
+      enabled: true
+
+logging:
+  level:
+    com.revticket.notification: DEBUG
+
+jwt:
+  secret: ${JWT_SECRET:RevTicketSecretKeyForJWTTokenGeneration2024SecureAndLongEnough}
+  expiration: 86400000

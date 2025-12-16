@@ -1,0 +1,53 @@
+@if (bookingDraft() && costBreakdown()) {
+  <div class="summary-container">
+    <div class="summary-card">
+      <h2>Booking Summary</h2>
+      
+      <div class="movie-info">
+        <h3>{{ bookingDraft()!.movieTitle }}</h3>
+        <p class="theatre">{{ bookingDraft()!.theaterName }}</p>
+        <p class="showtime">{{ bookingDraft()!.showDateTime | date:'MMM d, y - h:mm a' }}</p>
+      </div>
+
+      <div class="seat-info">
+        <h4>Selected Seats</h4>
+        <div class="seats">
+          @for (seat of bookingDraft()!.seats; track seat) {
+            <span class="seat">
+              {{ seat }}
+            </span>
+          }
+        </div>
+      </div>
+
+      <div class="price-breakdown">
+        <h4>Price Breakdown</h4>
+        <div class="price-item">
+          <span>Tickets ({{ bookingDraft()!.seats.length }})</span>
+          <span>₹{{ costBreakdown()!.baseAmount }}</span>
+        </div>
+        <div class="price-item">
+          <span>Convenience Fee</span>
+          <span>₹{{ costBreakdown()!.convenienceFee }}</span>
+        </div>
+        <div class="price-item">
+          <span>Taxes (GST)</span>
+          <span>₹{{ costBreakdown()!.gst }}</span>
+        </div>
+        <div class="price-item total">
+          <span>Total Amount</span>
+          <span>₹{{ costBreakdown()!.total }}</span>
+        </div>
+      </div>
+
+      <div class="actions">
+        <button class="btn-secondary" (click)="editSeats()">
+          Back to Seat Selection
+        </button>
+        <button class="btn-primary" (click)="proceedToPayment()">
+          Proceed to Payment
+        </button>
+      </div>
+    </div>
+  </div>
+}

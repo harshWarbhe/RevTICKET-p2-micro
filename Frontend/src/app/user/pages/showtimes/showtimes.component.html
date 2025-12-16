@@ -1,0 +1,95 @@
+<div class="showtimes-page">
+  @if (loading()) {
+  <div class="loading">
+    <div class="spinner"></div>
+    <p>Loading showtimes...</p>
+  </div>
+  } @else {
+  @if (movie()) {
+  <div class="movie-header">
+    <div class="container">
+      <h1>{{ movie()!.title }}</h1>
+      <div class="meta">
+        @if (movie()!.rating) {
+          <span class="rating">⭐ {{ movie()!.rating | number:'1.1-1' }}/5</span>
+        }
+        <span>{{ movie()!.genre.join(', ') }}</span>
+        <span>{{ movie()!.duration }} mins</span>
+      </div>
+    </div>
+  </div>
+  }
+
+  <div class="date-selector">
+    <div class="container">
+      <div class="date-scroll">
+        @for (date of dates(); track date) {
+        <div class="date-card" [class.active]="formatDate(date) === formatDate(selectedDate())"
+          (click)="selectDate(date)">
+          <div class="date-day">{{ getDayLabel(date) }}</div>
+          <div class="date-num">{{ date | date:'d' }}</div>
+          <div class="date-month">{{ date | date:'MMM' }}</div>
+        </div>
+        }
+      </div>
+    </div>
+  </div>
+
+  <div class="search-filters">
+    <div class="container">
+      <div class="filter-row">
+        <div class="search-bar">
+          <span class="search-icon">🔍</span>
+          <input type="text" placeholder="Search theaters..." [(ngModel)]="searchTerm" (ngModelChange)="onSearch($event)">
+        </div>
+        <div class="filters">
+          <div class="filter-group">
+            <label>Language:</label>
+            <select [(ngModel)]="selectedLanguage" (ngModelChange)="selectLanguage($event)">
+              @for (lang of languages(); track lang) {
+              <option [value]="lang">{{ lang }}</option>
+              }
+            </select>
+          </div>
+          <div class="filter-group">
+            <label>Sort:</label>
+            <select [(ngModel)]="sortBy" (ngModelChange)="sortBy.set($event)">
+              <option value="time">Time</option>
+              <option value="name">Theater</option>
+            </select>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="theaters">
+    <div class="container">
+      @if (theaterGroups().length === 0) {
+      <div class="empty">
+        <svg width="60" height="60" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+          <rect x="2" y="7" width="20" height="15" rx="2" ry="2"/>
+          <polyline points="17 2 12 7 7 2"/>
+        </svg>
+        <h3>No shows available in {{ locationService.selectedCity() }}</h3>
+        <p>Try selecting a different date or city</p>
+      </div>
+      } @else {
+      @for (theater of theaterGroups(); track theater.theaterId) {
+      <div class="theater-card">
+        <h3>{{ theater.theaterName }}</h3>
+        <p>{{ theater.location }}</p>
+        <div class="showtimes">
+          @for (show of theater.showtimes; track show.id) {
+          <button class="showtime-btn" (click)="selectShowtime(show.id)">
+            <div class="time">{{ show.showDateTime | date:'h:mm a' }}</div>
+          </button>
+          }
+        </div>
+      </div>
+      }
+      }
+    </div>
+  </div>
+  }
+</div>

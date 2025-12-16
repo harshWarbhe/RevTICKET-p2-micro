@@ -1,0 +1,50 @@
+server:
+  port: 8087
+
+spring:
+  application:
+    name: review-service
+
+  data:
+    mongodb:
+      uri: ${MONGODB_URI:mongodb://localhost:27017/review_service_db}
+      auto-index-creation: true
+
+  cloud:
+    consul:
+      host: localhost
+      port: 8500
+      discovery:
+        enabled: true
+        register: true
+        service-name: ${spring.application.name}
+        health-check-path: /actuator/health
+        health-check-interval: 10s
+        instance-id: ${spring.application.name}:${server.port}
+        hostname: localhost
+        prefer-ip-address: false
+
+jwt:
+  secret: ${JWT_SECRET:RevTicketSecretKeyForJWTTokenGeneration2024SecureAndLongEnough}
+  expiration: 86400000
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info
+  endpoint:
+    health:
+      show-details: when-authorized
+
+logging:
+  level:
+    com.revticket.review: DEBUG
+    org.springframework.security: DEBUG
+
+feign:
+  client:
+    config:
+      default:
+        connectTimeout: 5000
+        readTimeout: 5000

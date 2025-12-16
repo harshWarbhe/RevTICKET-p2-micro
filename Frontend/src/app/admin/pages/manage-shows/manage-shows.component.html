@@ -1,0 +1,105 @@
+<div class="container">
+  <div class="header">
+    <div>
+      <h1>🎬 Manage Shows</h1>
+      <p>{{ shows().length }} total shows</p>
+    </div>
+    <button *ngIf="!showForm()" (click)="addShow()" class="btn-add">+ Add Show</button>
+  </div>
+
+  <div *ngIf="loading()" class="loading">
+    <div class="spinner"></div>
+    <p>Loading...</p>
+  </div>
+
+  <div *ngIf="!showForm() && !loading()" class="shows-list">
+    <div *ngIf="shows().length === 0" class="empty">
+      <p>🎬 No shows found</p>
+      <button (click)="addShow()" class="btn-add">Add Your First Show</button>
+    </div>
+
+    <table *ngIf="shows().length > 0">
+      <thead>
+        <tr>
+          <th>Movie</th>
+          <th>Theater</th>
+          <th>Location</th>
+          <th>Screen</th>
+          <th>Date & Time</th>
+          <th>Status</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let show of shows()" [class.past]="!isUpcoming(show.showDateTime)">
+          <td><strong>{{ show.movie?.title || 'N/A' }}</strong></td>
+          <td>{{ show.theater?.name || 'N/A' }}</td>
+          <td>
+            <span class="location-badge">📍 {{ show.theater?.location || 'N/A' }}</span>
+          </td>
+          <td>{{ getScreenName(show.screen) }}</td>
+          <td>{{ formatDateTime(show.showDateTime) }}</td>
+          <td>
+            <span class="badge" [class.active]="show.status === 'ACTIVE'">
+              {{ show.status }}
+            </span>
+          </td>
+          <td>
+            <button (click)="toggleStatus(show)" class="btn-icon"
+              [title]="show.status === 'ACTIVE' ? 'Deactivate' : 'Activate'">
+              {{ show.status === 'ACTIVE' ? '⏸️' : '▶️' }}
+            </button>
+            <button (click)="editShow(show)" class="btn-icon" title="Edit">✏️</button>
+            <button (click)="deleteShow(show)" class="btn-icon" title="Delete">🗑️</button>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div *ngIf="showForm()" class="form">
+    <h2>{{ editingShowId() ? 'Edit Show' : 'Add New Show' }}</h2>
+
+    <div class="form-group">
+      <label>Movie *</label>
+      <select [(ngModel)]="selectedMovieId" required>
+        <option value="">Select Movie</option>
+        <option *ngFor="let movie of movies()" [value]="movie.id">
+          {{ movie.title }} ({{ movie.duration }} min)
+        </option>
+      </select>
+    </div>
+
+    <div class="form-group">
+      <label>Theater *</label>
+      <select [(ngModel)]="selectedTheaterId" (change)="onTheaterChange()" required>
+        <option value="">Select Theater</option>
+        <option *ngFor="let theater of theaters()" [value]="theater.id">
+          {{ theater.name }} - {{ theater.location }}
+        </option>
+      </select>
+    </div>
+
+    <div class="form-group">
+      <label>Screen *</label>
+      <select [(ngModel)]="selectedScreenId" [disabled]="!selectedTheaterId" required>
+        <option value="">Select Screen</option>
+        <option *ngFor="let screen of screens()" [value]="screen.id">
+          {{ screen.name }} ({{ screen.totalSeats }} seats)
+        </option>
+      </select>
+    </div>
+
+    <div class="form-group">
+      <label>Show Date & Time *</label>
+      <input type="datetime-local" [(ngModel)]="showDateTime" required>
+    </div>
+
+    <div class="form-actions">
+      <button (click)="saveShow()" [disabled]="saving()" class="btn-save">
+        {{ saving() ? 'Saving...' : (editingShowId() ? 'Update' : 'Create') }}
+      </button>
+      <button (click)="cancelForm()" [disabled]="saving()" class="btn-cancel">Cancel</button>
+    </div>
+  </div>
+</div>

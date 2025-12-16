@@ -1,0 +1,242 @@
+server:
+  port: 8080
+
+spring:
+  application:
+    name: api-gateway
+  cloud:
+    loadbalancer:
+      ribbon:
+        enabled: false
+    gateway:
+      discovery:
+        locator:
+          enabled: true
+          lower-case-service-id: true
+      httpclient:
+        connect-timeout: 10000
+        response-timeout: 30s
+      default-filters:
+        - name: Retry
+          args:
+            retries: 3
+            statuses: BAD_GATEWAY,GATEWAY_TIMEOUT
+            methods: GET
+            backoff:
+              firstBackoff: 50ms
+              maxBackoff: 500ms
+      globalcors:
+        corsConfigurations:
+          '[/**]':
+            allowedOrigins: "http://localhost:4200"
+            allowedMethods:
+              - GET
+              - POST
+              - PUT
+              - DELETE
+              - OPTIONS
+            allowedHeaders: "*"
+            allowCredentials: true
+      routes:
+        # User Service Routes
+        - id: user-service-auth
+          uri: ${USER_SERVICE_URI:http://localhost:8081}
+          predicates:
+            - Path=/api/auth/**
+        
+        - id: user-service-admin
+          uri: ${USER_SERVICE_URI:http://localhost:8081}
+          predicates:
+            - Path=/api/admin/users/**
+          filters:
+            - JwtAuthenticationFilter
+        
+        - id: user-service
+          uri: ${USER_SERVICE_URI:http://localhost:8081}
+          predicates:
+            - Path=/api/users/**
+          filters:
+            - JwtAuthenticationFilter
+        
+        # Movie Service Routes
+        - id: movie-service-admin
+          uri: ${MOVIE_SERVICE_URI:http://localhost:8082}
+          predicates:
+            - Path=/api/admin/movies/**
+          filters:
+            - JwtAuthenticationFilter
+        
+        - id: movie-service
+          uri: ${MOVIE_SERVICE_URI:http://localhost:8082}
+          predicates:
+            - Path=/api/movies/**,/api/languages/**
+        
+        # Theater Service Routes
+        - id: theater-service-admin
+          uri: ${THEATER_SERVICE_URI:http://localhost:8083}
+          predicates:
+            - Path=/api/admin/theaters/**,/api/admin/theatres/**,/api/admin/screens/**
+          filters:
+            - JwtAuthenticationFilter
+        
+        - id: theater-service
+          uri: ${THEATER_SERVICE_URI:http://localhost:8083}
+          predicates:
+            - Path=/api/theaters/**,/api/theatres/**,/api/screens/**
+        
+        # Showtime Service Routes
+        - id: showtime-service-admin
+          uri: ${SHOWTIME_SERVICE_URI:http://localhost:8084}
+          predicates:
+            - Path=/api/admin/showtimes/**
+          filters:
+            - JwtAuthenticationFilter
+        
+        - id: showtime-service
+          uri: ${SHOWTIME_SERVICE_URI:http://localhost:8084}
+          predicates:
+            - Path=/api/showtimes/**
+        
+        # Booking Service Routes
+        - id: booking-service-seats-public
+          uri: ${BOOKING_SERVICE_URI:http://localhost:8085}
+          predicates:
+            - Path=/api/seats/showtime/**
+            - Method=GET
+        
+        - id: booking-service
+          uri: ${BOOKING_SERVICE_URI:http://localhost:8085}
+          predicates:
+            - Path=/api/bookings/**,/api/seats/**
+          filters:
+            - JwtAuthenticationFilter
+        
+        # Payment Service Routes
+        - id: payment-service-razorpay-health
+          uri: ${PAYMENT_SERVICE_URI:http://localhost:8086}
+          predicates:
+            - Path=/api/razorpay/health
+        
+        - id: payment-service-razorpay-create
+          uri: ${PAYMENT_SERVICE_URI:http://localhost:8086}
+          predicates:
+            - Path=/api/razorpay/create-order
+          filters:
+            - JwtAuthenticationFilter
+        
+        - id: payment-service-razorpay-verify
+          uri: ${PAYMENT_SERVICE_URI:http://localhost:8086}
+          predicates:
+            - Path=/api/razorpay/verify-payment
+        
+        - id: payment-service-razorpay-payment-failed
+          uri: ${PAYMENT_SERVICE_URI:http://localhost:8086}
+          predicates:
+            - Path=/api/razorpay/payment-failed
+          filters:
+            - JwtAuthenticationFilter
+        
+        - id: payment-service-razorpay
+          uri: ${PAYMENT_SERVICE_URI:http://localhost:8086}
+          predicates:
+            - Path=/api/razorpay/**
+          filters:
+            - JwtAuthenticationFilter
+        
+        - id: payment-service
+          uri: ${PAYMENT_SERVICE_URI:http://localhost:8086}
+          predicates:
+            - Path=/api/payments/**
+          filters:
+            - JwtAuthenticationFilter
+        
+        # Review Service Routes
+        - id: review-service-admin
+          uri: ${REVIEW_SERVICE_URI:http://localhost:8087}
+          predicates:
+            - Path=/api/admin/reviews/**
+          filters:
+            - JwtAuthenticationFilter
+        
+        - id: review-service-public
+          uri: ${REVIEW_SERVICE_URI:http://localhost:8087}
+          predicates:
+            - Path=/api/reviews/movie/**
+        
+        - id: review-service
+          uri: ${REVIEW_SERVICE_URI:http://localhost:8087}
+          predicates:
+            - Path=/api/reviews/**
+          filters:
+            - JwtAuthenticationFilter
+        
+        # Search Service Routes
+        - id: search-service
+          uri: ${SEARCH_SERVICE_URI:http://localhost:8088}
+          predicates:
+            - Path=/api/search/**
+        
+        # Notification Service Routes
+        - id: notification-service
+          uri: ${NOTIFICATION_SERVICE_URI:http://localhost:8089}
+          predicates:
+            - Path=/api/notifications/**,/ws/**
+          filters:
+            - JwtAuthenticationFilter
+        
+        # Settings Service Routes
+        - id: settings-service-admin
+          uri: ${SETTINGS_SERVICE_URI:http://localhost:8090}
+          predicates:
+            - Path=/api/admin/settings/**
+          filters:
+            - JwtAuthenticationFilter
+        
+        - id: settings-service
+          uri: ${SETTINGS_SERVICE_URI:http://localhost:8090}
+          predicates:
+            - Path=/api/settings/**
+        
+        # Dashboard Service Routes
+        - id: dashboard-service-reports
+          uri: ${DASHBOARD_SERVICE_URI:http://localhost:8091}
+          predicates:
+            - Path=/api/admin/reports/**
+          filters:
+            - JwtAuthenticationFilter
+        
+        - id: dashboard-service
+          uri: ${DASHBOARD_SERVICE_URI:http://localhost:8091}
+          predicates:
+            - Path=/api/admin/dashboard/**,/api/dashboard/**
+          filters:
+            - JwtAuthenticationFilter
+    consul:
+      host: localhost
+      port: 8500
+      discovery:
+        enabled: true
+        register: true
+        service-name: ${spring.application.name}
+        health-check-path: /actuator/health
+        health-check-interval: 10s
+        instance-id: ${spring.application.name}:${server.port}
+        hostname: localhost
+        prefer-ip-address: false
+
+jwt:
+  secret: ${JWT_SECRET:RevTicketSecretKeyForJWTTokenGeneration2024SecureAndLongEnough}
+
+logging:
+  level:
+    org.springframework.cloud.gateway: DEBUG
+    org.springframework.cloud.loadbalancer: DEBUG
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,gateway
+  endpoint:
+    health:
+      show-details: always

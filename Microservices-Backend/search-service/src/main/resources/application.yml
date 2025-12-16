@@ -1,0 +1,45 @@
+server:
+  port: 8088
+
+spring:
+  application:
+    name: search-service
+
+  cloud:
+    consul:
+      host: localhost
+      port: 8500
+      discovery:
+        enabled: true
+        register: true
+        service-name: ${spring.application.name}
+        health-check-path: /actuator/health
+        health-check-interval: 10s
+        instance-id: ${spring.application.name}:${server.port}
+        hostname: localhost
+        prefer-ip-address: false
+
+jwt:
+  secret: ${JWT_SECRET:RevTicketSecretKeyForJWTTokenGeneration2024SecureAndLongEnough}
+  expiration: 86400000
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info
+  endpoint:
+    health:
+      show-details: when-authorized
+
+logging:
+  level:
+    com.revticket.search: DEBUG
+    org.springframework.security: DEBUG
+
+feign:
+  client:
+    config:
+      default:
+        connectTimeout: 5000
+        readTimeout: 5000

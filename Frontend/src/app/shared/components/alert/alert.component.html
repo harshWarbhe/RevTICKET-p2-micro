@@ -1,0 +1,9 @@
+<div class="alert-container">
+  @for (alert of alerts(); track alert.id) {
+    <div class="alert alert-{{ alert.type }}" [class.fade-out]="isFading(alert.id)">
+      <span class="alert-icon">{{ getIcon(alert.type) }}</span>
+      <span class="alert-message">{{ alert.message }}</span>
+      <button class="alert-close" (click)="closeAlert(alert.id)">×</button>
+    </div>
+  }
+</div>

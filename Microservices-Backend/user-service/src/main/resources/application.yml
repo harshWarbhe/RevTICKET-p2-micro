@@ -1,0 +1,95 @@
+server:
+  port: 8081
+
+spring:
+  application:
+    name: user-service
+
+  datasource:
+    url: ${SPRING_DATASOURCE_URL:jdbc:mysql://localhost:3306/user_service_db?createDatabaseIfNotExist=true&useSSL=false&allowPublicKeyRetrieval=true}
+    username: ${SPRING_DATASOURCE_USERNAME:root}
+    password: ${SPRING_DATASOURCE_PASSWORD:Admin123}
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    hikari:
+      connection-timeout: 60000
+      maximum-pool-size: 10
+      minimum-idle: 5
+
+  jpa:
+    hibernate:
+      ddl-auto: update
+    show-sql: true
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.MySQLDialect
+        format_sql: true
+
+  mail:
+    host: ${MAIL_HOST:smtp.gmail.com}
+    port: ${MAIL_PORT:587}
+    username: ${MAIL_USERNAME:harshwarbhe18@gmail.com}
+    password: ${MAIL_PASSWORD:hghtodqpoaubkqjh}
+    default-encoding: UTF-8
+    test-connection: false
+    properties:
+      mail:
+        smtp:
+          auth: true
+          starttls:
+            enable: true
+            required: true
+          ssl:
+            trust: smtp.gmail.com
+          connectiontimeout: 30000
+          timeout: 30000
+          writetimeout: 30000
+        debug: false
+
+  security:
+    oauth2:
+      client:
+        registration:
+          google:
+            client-id: ${GOOGLE_CLIENT_ID:21826531648-9ai38efgotj5f76lvf29kgqn1toenr20.apps.googleusercontent.com}
+            client-secret: ${GOOGLE_CLIENT_SECRET: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}
+            scope: profile,email
+            redirect-uri: "{baseUrl}/login/oauth2/code/{registrationId}"
+
+  cloud:
+    consul:
+      host: localhost
+      port: 8500
+      discovery:
+        enabled: true
+        register: true
+        service-name: ${spring.application.name}
+        health-check-path: /actuator/health
+        health-check-interval: 10s
+        instance-id: ${spring.application.name}:${server.port}
+        hostname: localhost
+        prefer-ip-address: false
+
+jwt:
+  secret: ${JWT_SECRET:RevTicketSecretKeyForJWTTokenGeneration2024SecureAndLongEnough}
+  expiration: 86400000
+
+app:
+  frontend:
+    url: ${FRONTEND_URL:http://localhost:4200}
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info
+  endpoint:
+    health:
+      show-details: always
+  health:
+    mail:
+      enabled: true
+
+logging:
+  level:
+    com.revticket.user: DEBUG
+    org.springframework.security: DEBUG

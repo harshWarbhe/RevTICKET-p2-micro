@@ -1,0 +1,159 @@
+<div class="movie-details-page">
+  @if (loading()) {
+  <div class="loading-state">
+    <div class="spinner"></div>
+    <p>Loading movie details...</p>
+  </div>
+  } @else if (movie()) {
+  <!-- Hero Section -->
+  <div class="hero-section">
+    <div class="hero-bg" [style.background-image]="'url(' + (movie()!.backgroundUrl || movie()!.posterUrl) + ')'"></div>
+    <div class="hero-gradient"></div>
+
+    <div class="hero-container">
+      <div class="poster-box">
+        <img [src]="movie()!.posterUrl" [alt]="movie()!.title" (error)="onImageError($event)">
+      </div>
+
+      <div class="hero-details">
+        <h1 class="movie-title">{{ movie()!.title }}</h1>
+
+        <div class="rating-meta">
+          @if (movie()!.rating) {
+            <div class="rating-badge">
+              <span class="star">★</span>
+              <span class="score">{{ movie()!.rating | number:'1.1-1' }}</span>
+              <span class="max">/5</span>
+            </div>
+          } @else {
+            <div class="rating-badge no-rating">
+              <span class="star">☆</span>
+              <span class="score">No ratings yet</span>
+            </div>
+          }
+          <div class="meta-info">
+            <span>{{ movie()!.duration }} mins</span>
+            <span class="dot">•</span>
+            <span>{{ movie()!.language }}</span>
+            <span class="dot">•</span>
+            <span>{{ movie()!.releaseDate | date:'yyyy' }}</span>
+          </div>
+        </div>
+
+        <div class="genre-tags">
+          @for (genre of movie()!.genre; track genre) {
+          <span class="tag">{{ genre }}</span>
+          }
+        </div>
+
+        <p class="synopsis">{{ movie()!.description }}</p>
+
+        <button class="cta-button" (click)="bookTickets()">
+          <span class="icon">🎫</span>
+          <span>Book Tickets</span>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Content Sections -->
+  <div class="content-wrapper">
+    <!-- About Movie -->
+    <section class="content-section">
+      <h2 class="section-heading">About the Movie</h2>
+      <div class="about-content">
+        <p class="description">{{ movie()!.description }}</p>
+
+        <div class="info-grid">
+          <div class="info-card">
+            <span class="info-label">Duration</span>
+            <span class="info-value">{{ movie()!.duration }} minutes</span>
+          </div>
+          <div class="info-card">
+            <span class="info-label">Language</span>
+            <span class="info-value">{{ movie()!.language }}</span>
+          </div>
+          <div class="info-card">
+            <span class="info-label">Release Date</span>
+            <span class="info-value">{{ movie()!.releaseDate | date:'d MMM yyyy' }}</span>
+          </div>
+          <div class="info-card">
+            <span class="info-label">Rating</span>
+            <span class="info-value">{{ movie()!.rating ? (movie()!.rating | number:'1.1-1') + '/5' : 'No ratings yet' }}</span>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Cast & Crew -->
+    @if (movie()!.director || (movie()!.crew && movie()!.crew!.length > 0)) {
+    <section class="content-section">
+      <h2 class="section-heading">Cast & Crew</h2>
+
+      <div class="cast-grid">
+        @if (movie()!.director) {
+        <div class="cast-item">
+          <div class="cast-photo">
+            <span>{{ movie()!.director!.charAt(0) }}</span>
+          </div>
+          <div class="cast-details">
+            <p class="cast-name">{{ movie()!.director }}</p>
+            <p class="cast-role">Director</p>
+          </div>
+        </div>
+        }
+
+        @if (movie()!.crew && movie()!.crew!.length > 0) {
+        @for (member of movie()!.crew!.slice(0, 8); track member) {
+        <div class="cast-item">
+          <div class="cast-photo">
+            <span>{{ member.charAt(0) }}</span>
+          </div>
+          <div class="cast-details">
+            <p class="cast-name">{{ member }}</p>
+            <p class="cast-role">Actor</p>
+          </div>
+        </div>
+        }
+        }
+      </div>
+    </section>
+    }
+
+    <!-- Trailer -->
+    @if (movie()!.trailerUrl && getSafeTrailerUrl()) {
+    <section class="content-section">
+      <h2 class="section-heading">Watch Trailer</h2>
+      <div class="video-wrapper">
+        <iframe [src]="getSafeTrailerUrl()!" allowfullscreen></iframe>
+      </div>
+    </section>
+    }
+
+    <!-- Showtimes Preview -->
+    @if (showtimes().length > 0) {
+    <section class="content-section">
+      <h2 class="section-heading">Available Showtimes</h2>
+
+      <div class="showtimes-preview">
+        @for (show of showtimes(); track show.id) {
+        <div class="showtime-box">
+          <div class="theater-name">{{ show.theater?.name || 'Theater' }}</div>
+          <div class="show-time">{{ show.showDateTime | date:'h:mm a' }}</div>
+        </div>
+        }
+      </div>
+
+      <button class="view-more-btn" (click)="bookTickets()">
+        View All Showtimes
+      </button>
+    </section>
+    }
+
+    <!-- Reviews & Ratings -->
+    @if (movie()) {
+    <app-movie-reviews [movieId]="movie()!.id"></app-movie-reviews>
+    }
+  </div>
+  }
+</div>

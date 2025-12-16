@@ -1,0 +1,207 @@
+<div class="manage-movies-page">
+  <!-- Header -->
+  <header class="page-header">
+    <div class="header-left">
+      <h1 class="page-title">🎬 Manage Movies</h1>
+      <p class="page-subtitle">{{ filteredMovies().length }} of {{ movies().length }} movies</p>
+    </div>
+    <div class="header-actions">
+      <button class="btn-secondary" [class.active]="showInactive()" (click)="toggleInactiveFilter()">
+        <span>{{ showInactive() ? '👁️' : '👁️‍🗨️' }}</span>
+        <span>{{ showInactive() ? 'Hide Inactive' : 'Show Inactive' }}</span>
+      </button>
+      <button class="btn-primary" routerLink="/admin/add-movie">
+        <span>➕</span>
+        <span>Add New Movie</span>
+      </button>
+    </div>
+  </header>
+
+  <!-- Filters -->
+  <section class="filters-section">
+    <div class="search-box">
+      <span class="search-icon">🔍</span>
+      <input type="text" placeholder="Search by title, director, language..." [ngModel]="searchTerm()"
+        (ngModelChange)="searchTerm.set($event)">
+      @if (searchTerm()) {
+      <button class="clear-btn" (click)="searchTerm.set('')" title="Clear search">
+        ✕
+      </button>
+      }
+    </div>
+
+    <select [ngModel]="selectedGenre()" (ngModelChange)="selectedGenre.set($event)" class="filter-select">
+      <option value="">🎭 All Genres ({{ movies().length }})</option>
+      @for (genre of availableGenres(); track genre) {
+      <option [value]="genre">{{ genre }}</option>
+      }
+      @if (availableGenres().length === 0) {
+      <option disabled>No genres available</option>
+      }
+    </select>
+
+    @if (searchTerm() || selectedGenre()) {
+    <button class="btn-clear-filters" (click)="searchTerm.set(''); selectedGenre.set('')">
+      <span>🔄</span>
+      <span>Clear Filters</span>
+    </button>
+    }
+  </section>
+
+  <!-- Loading State -->
+  @if (loading()) {
+  <div class="loading-state">
+    <div class="spinner"></div>
+    <p>Loading movies...</p>
+  </div>
+  }
+
+  <!-- Movies Table -->
+  @if (!loading() && filteredMovies().length > 0) {
+  <div class="movies-table">
+    <!-- Table Header -->
+    <div class="table-header">
+      <div class="col-poster">Poster</div>
+      <div class="col-title">Title</div>
+      <div class="col-crew">Crew / Director</div>
+      <div class="col-genre">Genre</div>
+      <div class="col-duration">Duration</div>
+      <div class="col-rating">Rating</div>
+      <div class="col-status">Status</div>
+      <div class="col-actions">Actions</div>
+    </div>
+
+    <!-- Table Rows -->
+    @for (movie of filteredMovies(); track trackById($index, movie)) {
+    <div class="table-row">
+      <div class="col-poster">
+        <img [src]="movie.posterUrl || 'assets/images/movies/default-poster.png'" [alt]="movie.title"
+          (error)="onImageError($event)">
+      </div>
+
+      <div class="col-title">
+        <div class="movie-title">{{ movie.title }}</div>
+        <div class="movie-date">{{ formatReleaseDate(movie.releaseDate) }}</div>
+      </div>
+
+      <div class="col-crew">
+        {{ getDirector(movie) }}
+      </div>
+
+      <div class="col-genre">
+        {{ movie.genre.length > 0 ? movie.genre.join(', ') : 'N/A' }}
+      </div>
+
+      <div class="col-duration">
+        {{ movie.duration }} min
+      </div>
+
+      <div class="col-rating">
+        <span class="rating-pill">{{ movie.rating != null ? (movie.rating | number:'1.1-1') : 'N/A' }}</span>
+      </div>
+
+      <div class="col-status">
+        <span class="status-pill" [class.active]="movie.isActive">
+          {{ movie.isActive ? 'Active' : 'Inactive' }}
+        </span>
+      </div>
+
+      <div class="col-actions">
+        <button class="action-btn edit" (click)="editMovie(movie)" 
+          [disabled]="togglingStatusId() === movie.id || deletingId() === movie.id"
+          title="Edit Movie">
+          ✏️
+        </button>
+        <button class="action-btn reviews" (click)="viewReviews(movie)" 
+          title="View Reviews">
+          ⭐
+        </button>
+        <button class="action-btn" [class.deactivate]="movie.isActive" [class.activate]="!movie.isActive"
+          (click)="toggleMovieStatus(movie)" 
+          [disabled]="togglingStatusId() === movie.id || deletingId() === movie.id"
+          [class.loading]="togglingStatusId() === movie.id"
+          [title]="movie.isActive ? 'Deactivate Movie' : 'Activate Movie'">
+          @if (togglingStatusId() === movie.id) {
+            <span class="btn-spinner">⏳</span>
+          } @else {
+            {{ movie.isActive ? '🚫' : '✅' }}
+          }
+        </button>
+      </div>
+    </div>
+    }
+  </div>
+  }
+
+  <!-- Reviews Modal -->
+  @if (showReviewsModal()) {
+  <div class="modal-overlay" (click)="closeReviewsModal()">
+    <div class="modal-content" (click)="$event.stopPropagation()">
+      <div class="modal-header">
+        <h2>Reviews for {{ selectedMovieTitle() }}</h2>
+        <button class="close-btn" (click)="closeReviewsModal()">✕</button>
+      </div>
+      <div class="modal-body">
+        @if (selectedMovieReviews().length === 0) {
+          <p class="no-reviews">No reviews yet</p>
+        } @else {
+          @for (review of selectedMovieReviews(); track review.id) {
+            <div class="review-item" [class.pending]="!review.approved">
+              <div class="review-header">
+                <div>
+                  <strong>{{ review.userName }}</strong>
+                  @if (!review.approved) {
+                    <span class="pending-badge">Pending</span>
+                  }
+                </div>
+                <div class="rating">
+                  @for (star of getStars(review.rating); track $index) {
+                    <span class="star">{{ star }}</span>
+                  }
+                </div>
+              </div>
+              <p class="review-comment">{{ review.comment }}</p>
+              <div class="review-footer">
+                <span class="date">{{ review.createdAt | date:'short' }}</span>
+                <div class="actions">
+                  @if (!review.approved) {
+                    <button class="btn-approve" (click)="approveReview(review.id)">Approve</button>
+                  }
+                  <button class="btn-delete" (click)="deleteReview(review.id)">Delete</button>
+                </div>
+              </div>
+            </div>
+          }
+        }
+      </div>
+    </div>
+  </div>
+  }
+
+  <!-- Empty State -->
+  @if (!loading() && filteredMovies().length === 0) {
+  <div class="empty-state">
+    <div class="empty-icon">🎬</div>
+    <h3>No Movies Found</h3>
+    @if (searchTerm() || selectedGenre()) {
+      <p>No movies match your current filters</p>
+      <button class="btn-secondary" (click)="searchTerm.set(''); selectedGenre.set('')">
+        <span>🔄</span>
+        <span>Clear All Filters</span>
+      </button>
+    } @else if (movies().length === 0) {
+      <p>Start by adding your first movie to the system</p>
+      <button class="btn-primary" routerLink="/admin/add-movie">
+        <span>➕</span>
+        <span>Add First Movie</span>
+      </button>
+    } @else {
+      <p>All movies are currently inactive</p>
+      <button class="btn-secondary" (click)="showInactive.set(true)">
+        <span>👁️</span>
+        <span>Show Inactive Movies</span>
+      </button>
+    }
+  </div>
+  }
+</div>

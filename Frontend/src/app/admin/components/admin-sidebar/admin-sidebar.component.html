@@ -1,0 +1,97 @@
+<aside class="sidebar" [class.collapsed]="!sidebarOpen()" [class.mobile]="isMobile() && sidebarOpen()">
+  <div class="sidebar-top">
+    @if (sidebarOpen()) {
+      <div class="logo">RevTicket</div>
+    }
+    <button class="collapse-btn" (click)="toggleSidebar()" aria-label="Toggle sidebar">
+      @if (sidebarOpen()) {
+        <span>✕</span>
+      } @else {
+        <span>☰</span>
+      }
+    </button>
+  </div>
+
+  <nav class="nav-list">
+    <a routerLink="/admin/dashboard" routerLinkActive="active" [routerLinkActiveOptions]="{ exact: true }"
+      (click)="closeSidebarOnMobile()" class="nav-link" title="Dashboard">
+      <span class="nav-icon">📊</span>
+      @if (sidebarOpen()) {
+        <span class="nav-label">Dashboard</span>
+      }
+    </a>
+
+    <a routerLink="/admin/manage-movies" routerLinkActive="active" (click)="closeSidebarOnMobile()" class="nav-link"
+      title="Manage Movies">
+      <span class="nav-icon">🎬</span>
+      @if (sidebarOpen()) {
+        <span class="nav-label">Manage Movies</span>
+      }
+    </a>
+
+    <a routerLink="/admin/manage-shows" routerLinkActive="active" (click)="closeSidebarOnMobile()" class="nav-link"
+      title="Manage Shows">
+      <span class="nav-icon">📅</span>
+      @if (sidebarOpen()) {
+        <span class="nav-label">Manage Shows</span>
+      }
+    </a>
+
+    <a routerLink="/admin/venues" routerLinkActive="active" (click)="closeSidebarOnMobile()" class="nav-link"
+      title="Venue Management">
+      <span class="nav-icon">🏢</span>
+      @if (sidebarOpen()) {
+        <span class="nav-label">Venues</span>
+      }
+    </a>
+
+    <a routerLink="/admin/bookings" routerLinkActive="active" (click)="closeSidebarOnMobile()" class="nav-link"
+      title="Manage Bookings">
+      <span class="nav-icon">🎫</span>
+      @if (sidebarOpen()) {
+        <span class="nav-label">Bookings</span>
+      }
+    </a>
+
+    <a routerLink="/admin/users" routerLinkActive="active" (click)="closeSidebarOnMobile()" class="nav-link"
+      title="Manage Users">
+      <span class="nav-icon">👥</span>
+      @if (sidebarOpen()) {
+        <span class="nav-label">Users</span>
+      }
+    </a>
+
+    <a routerLink="/admin/bookings-report" routerLinkActive="active" (click)="closeSidebarOnMobile()" class="nav-link"
+      title="Reports">
+      <span class="nav-icon">📈</span>
+      @if (sidebarOpen()) {
+        <span class="nav-label">Reports</span>
+      }
+    </a>
+
+    <a routerLink="/admin/reviews" routerLinkActive="active" (click)="closeSidebarOnMobile()" class="nav-link"
+      title="Reviews">
+      <span class="nav-icon">⭐</span>
+      @if (sidebarOpen()) {
+        <span class="nav-label">Reviews</span>
+      }
+    </a>
+
+    <a routerLink="/admin/settings" routerLinkActive="active" (click)="closeSidebarOnMobile()" class="nav-link"
+      title="Settings">
+      <span class="nav-icon">⚙️</span>
+      @if (sidebarOpen()) {
+        <span class="nav-label">Settings</span>
+      }
+    </a>
+  </nav>
+
+  <div class="sidebar-footer">
+    <a routerLink="/admin/profile" class="sidebar-footer-btn" title="Profile">👤</a>
+    <button class="sidebar-footer-btn" (click)="logout()" title="Logout">🚪</button>
+  </div>
+</aside>
+
+@if (isMobile() && sidebarOpen()) {
+  <div class="mobile-overlay" (click)="closeSidebarOnMobile()"></div>
+}
