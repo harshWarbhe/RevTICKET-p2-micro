@@ -1,0 +1,228 @@
+REVATURE PROJECT INTERVIEW PREPARATION - RevTicket_MSp2
+=====================================================
+
+1. FRAMEWORK LIBRARIES USED
+---------------------------
+Frontend (Angular 18):
+- Core Framework: Angular 18.2.14
+- State/Async Management: RxJS (~7.8.0)
+- Styling: SCSS/CSS (Native Angular), likely Bootstrap or Tailwind (checked usage in components if specific, but standard is often Bootstrap in Revature).
+- HTTP Client: Angular HttpClientModule
+- Real-time Communication: @stomp/stompjs, sockjs-client (for WebSockets/Notifications)
+- Utilities: jspdf, html2canvas (likely for ticket generation/download), qrcode (for ticket QR codes).
+
+Backend (Spring Boot 3.2.0 & Java 17):
+- Core: Spring Boot Starter Web
+- Database Access: Spring Data JPA (MySQL), Spring Data MongoDB (NoSQL)
+- Security: Spring Security, JWT (jjwt library 0.12.3), OAuth2 Client
+- Microservices: 
+  - Spring Cloud Consul (Service Discovery)
+  - Spring Cloud Gateway (API Gateway)
+  - Spring Cloud OpenFeign (Inter-service communication)
+- Tools: Lombok (Boilerplate reduction), Actuator (Monitoring), Maven (Build tool)
+- Testing: JUnit 5, Mockito
+
+2. SPRING DATA JPA / HIBERNATE
+------------------------------
+- What is it?: Spring Data JPA is an abstraction layer on top of JPA (Java Persistence API). It reduces boilerplate code by providing standard repository interfaces (JpaRepository) that automatically implement basic CRUD operations.
+- Hibernate: Hibernate is the actual ORM (Object-Relational Mapping) framework that implements the JPA specification. It maps Java classes (Entities) to Database tables.
+- Why use it?: In `RevTicket`, we use it to interact with MySQL services (User, Movie, Booking). It allows us to write Java methods like `findByUsername()` instead of writing raw SQL queries.
+
+3. JAVA COLLECTIONS IMPLEMENTATION
+----------------------------------
+- Remove Duplicates from ArrayList:
+  Use a `LinkedHashSet` to remove duplicates while preserving insertion order, or `HashSet` if order doesn't matter.
+  ```java
+  List<String> listWithDuplicates = Arrays.asList("a", "b", "a");
+  Set<String> set = new LinkedHashSet<>(listWithDuplicates);
+  List<String> listWithoutDuplicates = new ArrayList<>(set);
+  ```
+
+- Interface Familiarity: "I am familiar with List, Set, and Map interfaces. In this project, I mostly used List for returning collections of items (like Movies) and Map/Optional for handling query results."
+
+- ArrayList vs Vector:
+  - ArrayList: Not synchronized (not thread-safe), faster. Used in most cases.
+  - Vector: Synchronized (thread-safe), slower. Rarely used in modern development.
+
+- Map vs Set:
+  - Set: Collection of unique elements (e.g., storing unique Role names).
+  - Map: Key-Value pairs (e.g., Request headers, Configuration properties).
+
+4. AWS DEPLOYMENT
+-----------------
+(Assuming a standard Revature capstone flow, modify if you used specific methods)
+- "I deployed the services using EC2 instances. 
+  1. I dockerized each microservice (created Dockerfiles).
+  2. I used Docker Compose to spin up the infrastructure (Consul, MySQL, Mongo) and services on the EC2 instance.
+  3. I configured Security Groups to allow traffic on ports 8080 (Gateway) and 4200 (Frontend).
+  4. For the Frontend, I built the Angular app (`ng build`) and served it using Nginx in a Docker container."
+
+5. SERVICE DISCOVERY IMPLEMENTATION
+-----------------------------------
+- Tool: Consul (HashiCorp).
+- How it works:
+  1. Each microservice (e.g., `user-service`) has the `spring-cloud-starter-consul-discovery` dependency.
+  2. On startup, the service registers itself with the Consul Server (running on port 8500) using a unique ID and name.
+  3. The API Gateway queries Consul to find the IP address and port of a service (client-side load balancing) to forward requests.
+  - Configuration in `application.yml`:
+    ```yaml
+    spring:
+      cloud:
+        consul:
+          host: localhost
+          port: 8500
+          discovery:
+            service-name: user-service
+    ```
+
+6. EXCEPTION HANDLING
+---------------------
+- Java: Try-Catch-Finally blocks for checked exceptions.
+- Microservices/Spring Boot: Global Exception Handling using `@ControllerAdvice` and `@ExceptionHandler`.
+  - I created a `GlobalExceptionHandler` class.
+  - It catches specific exceptions (like `UserNotFoundException`) and returns a standard `ResponseEntity` with a custom `ErrorResponse` object (status code, message, timestamp).
+- SQL/Database: Spring Data JPA translates SQL exceptions (like ConstraintViolation) into DataAccessException hierarchy. We catch these in the Service layer or let them bubble to the Global Handler.
+- Angular: Use HttpInterceptor to catch HTTP errors globally.
+  - If a 401 occurs, redirect to login.
+  - If a 400/500 occurs, show a toast notification (using a library like SweetAlert2 or standard MatSnackBar).
+
+7. API ENDPOINTS & RESPONSE ENTITY
+----------------------------------
+- API format: `http://<gateway-host>:8080/<service-name>/<resource>`
+- ResponseEntity: In Spring Controllers, we return `ResponseEntity<T>`. This allows us to control the HTTP Status Code, Headers, and Body.
+  ```java
+  @GetMapping("/{id}")
+  public ResponseEntity<User> getUser(@PathVariable Long id) {
+      return ResponseEntity.ok(userService.getUser(id));
+      // or return ResponseEntity.status(HttpStatus.CREATED).body(newUser);
+  }
+  ```
+
+8. KAFKA (If applicable)
+------------------------
+(Note: Kafka is not explicitly in your docker-compose, you check if you used it. If not, say: "I primarily used REST/Feign for synchronous communication. However, for asynchronous tasks like sending email notifications, we could use Kafka/RabbitMQ where one service produces an event `TICKET_BOOKED` and the Notification Service consumes it.")
+*Correction based on project files*: You have a `notification-service`. If you are not using Kafka, you are likely calling it directly via Feign Client or HTTP.
+
+9. SERVICES USED IN PROJECT
+---------------------------
+- User Service (Auth, Profiles)
+- Movie Service (Movie catalog)
+- Theater Service (Theater management)
+- Showtime Service (Scheduling)
+- Booking Service (Ticket reservation logic)
+- Payment Service (Payment processing)
+- Review Service (Movie reviews - MongoDB)
+- Notification Service (Emails/Alerts - MongoDB)
+- Settings, Search, Dashboard Services.
+- API Gateway (Entry point)
+- Discovery Service (Consul)
+
+10. JWT AUTHENTICATION FLOW
+---------------------------
+1. Client sends credentials (username/password) to `/auth/login` in User Service.
+2. User Service validates credentials against MySQL DB.
+3. If valid, User Service generates a JWT String (using `jjwt` library) containing the username and roles (Claims).
+4. The JWT is signed with a secret key (`hmacShaKeyFor`).
+5. Client receives token and stores it (LocalStorage/SessionStorage).
+6. For subsequent requests, Angular adds `Authorization: Bearer <token>` header.
+7. API Gateway or individual services (Filter) validate the signature of the token before allowing access.
+
+11. ENTITY TO REPOSITORY FLOW
+-----------------------------
+1. **Entity**: `User.java` (Annotated with `@Entity`, `@Table`). Represents the DB structure.
+2. **Repository**: `UserRepository.java` (Extends `JpaRepository<User, Long>`). Provides database access methods.
+3. **Service**: `UserService.java`. Injects Repository. Contains business logic (e.g., check if user exists, hash password). Calls `repo.save(user)`.
+4. **Controller**: `UserController.java`. Injects Service. Exposes REST endpoints. Receives DTOs, calls Service, returns ResponseEntity.
+
+12. JAVA 8 FEATURES & OOPS
+--------------------------
+- **Java 8**: Used Streams API (filtering movie lists), Lambdas (sorting), Optional (handling nulls in repository `findById`), Method References.
+- **OOPS Inheritance**:
+  - *Scenario*: We might have a base class `BaseEntity` containing `id`, `createdAt`, `updatedAt` (annotated `@MappedSuperclass`). `User`, `Movie` entities extend `BaseEntity` to inherit these common fields.
+- **Static vs Instance**:
+  - `Can we override static methods?`: No. Static methods belong to the class, not the instance. Declaring a static method with the same signature in a child class is "Method Hiding", not overriding.
+  - `this/super in static?`: No. `this` refers to the current instance, `super` to the parent instance. Static context has no instance.
+
+13. MONGODB IMPLEMENTATION
+--------------------------
+- **What is it?**: NoSQL, document-oriented database. Stores data in JSON-like BSON format.
+- **Usage**: Used in `Review Service` and `Notification Service` for flexible data.
+- **Creating Collection**: MongoDB creates collections automatically when you insert the first document.
+  - Spring: `@Document(collection = "reviews")` on the entity class.
+- **Insert**: `reviewRepository.save(new Review(...))` inserts the document.
+- **Relations**: MongoDB is not relational.
+  - We use **Referencing** (storing `movieId` in the Review document) or **Embedding** (storing comments inside a Review document).
+  - In this project, likely referencing (storing `userId` and `movieId` as Strings/Longs in the Review document).
+
+14. CONNECTING BACKEND TO UI
+----------------------------
+1. **Backend**: Expose REST APIs via Controllers (Enable CORS with `@CrossOrigin`).
+2. **Frontend (Angular)**:
+   - Create Service (`ng g s services/movie`).
+   - Inject `HttpClient`.
+   - Methods call the API:
+     ```typescript
+     getMovies(): Observable<Movie[]> {
+        return this.http.get<Movie[]>(`${environment.apiUrl}/movies`);
+     }
+     ```
+   - Component subscribes to the Observable:
+     ```typescript
+     this.movieService.getMovies().subscribe(data => this.movies = data);
+     ```
+
+15. PHASE 1 VS PHASE 2
+----------------------
+- **Phase 1 (Monolith/MVP)**: Likely a single Spring Boot application connecting to one MySQL DB. Simple frontend. Focus on logic.
+- **Phase 2 (Microservices)**:
+  - Dockerized services.
+  - Service Registry (Consul).
+  - API Gateway for routing.
+  - Polyglot persistence (MySQL + Mongo).
+  - Distributed systems challenges (handling inter-service communication).
+
+16. ANGULAR PRACTICAL QUESTIONS
+-------------------------------
+- **Interpolation**: `{{ variableName }}` in HTML. Displays component data.
+- **Two-way binding**: `[(ngModel)]="variable"`. Requires `FormsModule`. Updates both Logic and UI instantly.
+- **Event binding**: `(click)="methodName()"`. Triggers component method from UI event.
+- **Form Validation**:
+  - **Reactive Forms**:
+    1. Import `ReactiveFormsModule`.
+    2. Component: `this.loginForm = this.fb.group({ email: ['', [Validators.required, Validators.email]] })`.
+    3. HTML: `<input formControlName="email">`.
+    4. Feedback: `*ngIf="loginForm.get('email').invalid"`.
+- **Sample Form Creation**:
+  1. `ng generate component login`.
+  2. Inject `FormBuilder` in constructor.
+  3. Define `FormGroup`.
+  4. Create HTML form with `[formGroup]` and `formControlName`.
+  5. `onSubmit()` method calls Authentication Service.
+
+17. SQL VS MONGODB
+------------------
+- **SQL (MySQL)**:
+  - Table-based (Rows/Columns).
+  - Fixed Schema (Must define columns beforehand).
+  - Good for complex relations (Joins) and transactions (ACID).
+  - Used for: User accounts, Payments, Seats (Structured data).
+- **MongoDB**:
+  - Document-based (Collections/Documents).
+  - Dynamic Schema (Can add fields on the fly).
+  - Good for high volume, hierarchical data.
+  - Used for: Reviews (comments, ratings vary), Notifications (different payload types).
+
+18. REPOSITORY LAYER EXPLANATION
+--------------------------------
+- **JPA vs Spring Data JPA**:
+  - JPA is the *Specification* (Rules).
+  - Hibernate is the *Implementation* (Engine).
+  - Spring Data JPA is the *Access Layer* (Wrapper). It makes using Hibernate easier by generating code for you.
+- **ORM (Object Relational Mapping)**: The technique of converting Java Objects to Database Tables and vice-versa automatically.
+
+19. IMPLEMENTATION LAYERS
+-------------------------
+1. **Controller Layer**: Handles HTTP requests, input validation, returns specific DTOs to UI.
+2. **Service Layer**: Transactional boundaries, business logic (calculations, validations calling other services).
+3. **Repository Layer**: Interface with Database (CRUD).
+4. **Entity Layer**: Plain Java Objects representing DB tables.

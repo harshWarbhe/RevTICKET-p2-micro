@@ -29,21 +29,21 @@ public class BookingService {
 
     @Autowired
     private SeatRepository seatRepository;
-    
+
     @Autowired
     private ShowtimeServiceClient showtimeServiceClient;
-    
+
     @Autowired
     private MovieServiceClient movieServiceClient;
-    
+
     @Autowired
     private TheaterServiceClient theaterServiceClient;
-    
+
     @Autowired
     private NotificationServiceClient notificationServiceClient;
 
-    private static final int MAX_SEATS_PER_BOOKING = 10;
-    private static final int CANCELLATION_WINDOW_HOURS = 2;
+    // private static final int MAX_SEATS_PER_BOOKING = 10;
+    // private static final int CANCELLATION_WINDOW_HOURS = 2;
 
     @Transactional
     public BookingResponse createBooking(String userId, BookingRequest request) {
@@ -51,7 +51,7 @@ public class BookingService {
         System.out.println("UserId: " + userId);
         System.out.println("ShowtimeId: " + request.getShowtimeId());
         System.out.println("Seats: " + request.getSeats());
-        
+
         if (request.getSeats() == null || request.getSeats().isEmpty()) {
             throw new RuntimeException("No seats selected");
         }
@@ -59,30 +59,35 @@ public class BookingService {
         // Validate and block seats first
         List<Seat> showtimeSeats = seatRepository.findByShowtimeId(request.getShowtimeId());
         System.out.println("Found " + showtimeSeats.size() + " seats for showtime");
-        
+
         if (showtimeSeats.isEmpty()) {
-            throw new RuntimeException("Seats not initialized for showtime " + request.getShowtimeId() + ". Please refresh and select seats again.");
+            throw new RuntimeException("Seats not initialized for showtime " + request.getShowtimeId()
+                    + ". Please refresh and select seats again.");
         }
-        
+
         for (String seatId : request.getSeats()) {
             System.out.println("Looking for seat: " + seatId);
             Seat seat = showtimeSeats.stream()
-                    .filter(s -> seatId.equals(s.getId()) || 
+                    .filter(s -> seatId.equals(s.getId()) ||
                             seatId.equals(s.getRow() + s.getNumber()))
                     .findFirst()
                     .orElseThrow(() -> {
-                        System.out.println("Available seats: " + showtimeSeats.stream().map(s -> s.getId() + "(" + s.getRow() + s.getNumber() + ")").collect(java.util.stream.Collectors.toList()));
+                        System.out.println("Available seats: "
+                                + showtimeSeats.stream().map(s -> s.getId() + "(" + s.getRow() + s.getNumber() + ")")
+                                        .collect(java.util.stream.Collectors.toList()));
                         return new RuntimeException("Seat not found: " + seatId);
                     });
-            
-            System.out.println("Found seat: " + seat.getId() + " (" + seat.getRow() + seat.getNumber() + ") - Booked: " + seat.getIsBooked());
-            
+
+            System.out.println("Found seat: " + seat.getId() + " (" + seat.getRow() + seat.getNumber() + ") - Booked: "
+                    + seat.getIsBooked());
+
             if (seat.getIsBooked()) {
                 throw new RuntimeException("Seat " + seat.getRow() + seat.getNumber() + " is already booked");
             }
-            
+
             if (seat.getIsHeld() && seat.getHoldExpiry() != null && seat.getHoldExpiry().isAfter(LocalDateTime.now())) {
-                throw new RuntimeException("Seat " + seat.getRow() + seat.getNumber() + " is currently held by another user");
+                throw new RuntimeException(
+                        "Seat " + seat.getRow() + seat.getNumber() + " is currently held by another user");
             }
         }
 
@@ -104,7 +109,7 @@ public class BookingService {
         booking.setQrCode("QR_" + UUID.randomUUID().toString());
 
         booking = bookingRepository.save(booking);
-        
+
         // Send booking confirmation notification
         try {
             sendBookingConfirmationNotification(booking);
@@ -116,7 +121,7 @@ public class BookingService {
         // Block the seats
         for (String seatId : request.getSeats()) {
             Seat seat = showtimeSeats.stream()
-                    .filter(s -> seatId.equals(s.getId()) || 
+                    .filter(s -> seatId.equals(s.getId()) ||
                             seatId.equals(s.getRow() + s.getNumber()))
                     .findFirst()
                     .orElse(null);
@@ -159,16 +164,16 @@ public class BookingService {
         booking.setStatus(Booking.BookingStatus.CANCELLATION_PENDING);
         booking.setCancellationReason(Objects.requireNonNullElse(reason, ""));
         booking.setCancellationRequestedAt(LocalDateTime.now());
-        
+
         booking = bookingRepository.save(booking);
-        
+
         // Send cancellation request notification to admin
         try {
             sendCancellationRequestNotification(booking);
         } catch (Exception e) {
             System.out.println("Failed to send cancellation request notification: " + e.getMessage());
         }
-        
+
         return mapToResponse(booking);
     }
 
@@ -185,7 +190,7 @@ public class BookingService {
     public BookingResponse cancelBooking(String id, String reason) {
         Booking booking = bookingRepository.findById(Objects.requireNonNullElse(id, ""))
                 .orElseThrow(() -> new RuntimeException("Booking not found"));
-        
+
         if (booking.getStatus() == Booking.BookingStatus.CANCELLED) {
             throw new RuntimeException("Booking is already cancelled");
         }
@@ -212,14 +217,14 @@ public class BookingService {
         booking.setRefundDate(LocalDateTime.now());
 
         Booking savedBooking = bookingRepository.save(booking);
-        
+
         // Send booking cancellation notification
         try {
             sendBookingCancelledNotification(savedBooking);
         } catch (Exception e) {
             System.out.println("Failed to send booking cancellation notification: " + e.getMessage());
         }
-        
+
         return mapToResponse(savedBooking);
     }
 
@@ -239,7 +244,7 @@ public class BookingService {
         List<Seat> showtimeSeats = seatRepository.findByShowtimeId(booking.getShowtimeId());
         for (String seatId : booking.getSeats()) {
             Seat seat = showtimeSeats.stream()
-                    .filter(s -> seatId.equals(s.getId()) || 
+                    .filter(s -> seatId.equals(s.getId()) ||
                             seatId.equals(s.getRow() + s.getNumber()))
                     .findFirst()
                     .orElse(null);
@@ -276,10 +281,10 @@ public class BookingService {
         }
 
         List<Seat> showtimeSeats = seatRepository.findByShowtimeId(booking.getShowtimeId());
-        
+
         for (String seatId : booking.getSeats()) {
             Seat seat = showtimeSeats.stream()
-                    .filter(s -> seatId.equals(s.getId()) || 
+                    .filter(s -> seatId.equals(s.getId()) ||
                             seatId.equals(s.getRow() + s.getNumber()))
                     .findFirst()
                     .orElse(null);
@@ -291,7 +296,7 @@ public class BookingService {
 
         for (String seatId : newSeats) {
             Seat seat = showtimeSeats.stream()
-                    .filter(s -> seatId.equals(s.getId()) || 
+                    .filter(s -> seatId.equals(s.getId()) ||
                             seatId.equals(s.getRow() + s.getNumber()))
                     .findFirst()
                     .orElseThrow(() -> new RuntimeException("Seat not found: " + seatId));
@@ -303,7 +308,7 @@ public class BookingService {
         booking.setSeats(newSeats);
         for (String seatId : newSeats) {
             Seat seat = showtimeSeats.stream()
-                    .filter(s -> seatId.equals(s.getId()) || 
+                    .filter(s -> seatId.equals(s.getId()) ||
                             seatId.equals(s.getRow() + s.getNumber()))
                     .findFirst()
                     .orElse(null);
@@ -320,14 +325,14 @@ public class BookingService {
     public BookingResponse confirmPayment(String bookingId, String transactionId) {
         Booking booking = bookingRepository.findById(Objects.requireNonNullElse(bookingId, ""))
                 .orElseThrow(() -> new RuntimeException("Booking not found"));
-        
+
         booking.setPaymentId(transactionId);
         booking.setStatus(Booking.BookingStatus.CONFIRMED);
-        
+
         booking = bookingRepository.save(booking);
         return mapToResponse(booking);
     }
-    
+
     public BookingStatsResponse getBookingStats() {
         Long totalBookings = bookingRepository.count();
         Long cancelledBookings = bookingRepository.countByStatus(Booking.BookingStatus.CANCELLED);
@@ -337,7 +342,8 @@ public class BookingService {
         Long totalSeatsBooked = bookingRepository.findAll().stream()
                 .mapToLong(b -> b.getSeats() != null ? b.getSeats().size() : 0)
                 .sum();
-        return new BookingStatsResponse(totalBookings, cancelledBookings, bookingsLast7Days, bookingsLast30Days, totalSeatsBooked);
+        return new BookingStatsResponse(totalBookings, cancelledBookings, bookingsLast7Days, bookingsLast30Days,
+                totalSeatsBooked);
     }
 
     private BookingResponse mapToResponse(Booking booking) {
@@ -350,7 +356,7 @@ public class BookingService {
         LocalDateTime showtime = null;
         String screen = booking.getScreenName();
         Double ticketPrice = booking.getTicketPriceSnapshot();
-        
+
         try {
             ShowtimeDTO showtimeDTO = showtimeServiceClient.getShowtimeById(booking.getShowtimeId());
             if (showtimeDTO != null) {
@@ -360,7 +366,7 @@ public class BookingService {
                 if (ticketPrice == null) {
                     ticketPrice = showtimeDTO.getTicketPrice();
                 }
-                
+
                 // Get screen name from theater service
                 if (screen == null || screen.isEmpty()) {
                     String screenId = showtimeDTO.getScreen();
@@ -377,7 +383,7 @@ public class BookingService {
                         }
                     }
                 }
-                
+
                 if (!movieId.isEmpty()) {
                     try {
                         MovieDTO movieDTO = movieServiceClient.getMovieById(movieId);
@@ -389,7 +395,7 @@ public class BookingService {
                         movieTitle = "Movie Info Unavailable";
                     }
                 }
-                
+
                 if (!theaterId.isEmpty()) {
                     try {
                         TheaterDTO theaterDTO = theaterServiceClient.getTheaterById(theaterId);
@@ -397,7 +403,8 @@ public class BookingService {
                             theaterName = Objects.requireNonNullElse(theaterDTO.getName(), "");
                             String location = Objects.requireNonNullElse(theaterDTO.getLocation(), "");
                             String city = Objects.requireNonNullElse(theaterDTO.getCity(), "");
-                            theaterLocation = location.isEmpty() ? city : (city.isEmpty() ? location : location + ", " + city);
+                            theaterLocation = location.isEmpty() ? city
+                                    : (city.isEmpty() ? location : location + ", " + city);
                         }
                     } catch (Exception e) {
                         theaterName = "Theater Info Unavailable";
@@ -407,7 +414,7 @@ public class BookingService {
         } catch (Exception e) {
             // Fallback to empty values if showtime service fails
         }
-        
+
         return BookingResponse.builder()
                 .id(Objects.requireNonNullElse(booking.getId(), ""))
                 .userId(Objects.requireNonNullElse(booking.getUserId(), ""))
@@ -437,7 +444,7 @@ public class BookingService {
                 .cancellationReason(Objects.requireNonNullElse(booking.getCancellationReason(), ""))
                 .build();
     }
-    
+
     private void sendBookingConfirmationNotification(Booking booking) {
         Map<String, Object> request = new java.util.HashMap<>();
         request.put("customerEmail", booking.getCustomerEmail());
@@ -451,13 +458,13 @@ public class BookingService {
         } else {
             request.put("seats", booking.getSeats());
         }
-        
+
         // Fetch movie and theater details
         try {
             ShowtimeDTO showtimeDTO = showtimeServiceClient.getShowtimeById(booking.getShowtimeId());
             if (showtimeDTO != null) {
                 request.put("showDateTime", showtimeDTO.getShowDateTime());
-                
+
                 // Get movie details
                 if (showtimeDTO.getMovieId() != null) {
                     try {
@@ -469,7 +476,7 @@ public class BookingService {
                         request.put("movieTitle", "Movie Info Unavailable");
                     }
                 }
-                
+
                 // Get theater details
                 if (showtimeDTO.getTheaterId() != null) {
                     try {
@@ -481,7 +488,7 @@ public class BookingService {
                         request.put("theaterName", "Theater Info Unavailable");
                     }
                 }
-                
+
                 // Get screen details
                 if (showtimeDTO.getScreen() != null) {
                     try {
@@ -489,7 +496,8 @@ public class BookingService {
                         if (screenData != null && screenData.containsKey("name")) {
                             request.put("screenName", screenData.get("name"));
                         } else {
-                            request.put("screenName", "Screen " + showtimeDTO.getScreen().substring(0, Math.min(8, showtimeDTO.getScreen().length())));
+                            request.put("screenName", "Screen " + showtimeDTO.getScreen().substring(0,
+                                    Math.min(8, showtimeDTO.getScreen().length())));
                         }
                     } catch (Exception e) {
                         request.put("screenName", "Screen Info Unavailable");
@@ -499,10 +507,10 @@ public class BookingService {
         } catch (Exception e) {
             System.out.println("Failed to fetch booking details for notification: " + e.getMessage());
         }
-        
+
         notificationServiceClient.sendBookingConfirmation(request);
     }
-    
+
     private void sendCancellationRequestNotification(Booking booking) {
         Map<String, Object> request = new java.util.HashMap<>();
         request.put("bookingId", booking.getId());
@@ -512,7 +520,7 @@ public class BookingService {
         request.put("ticketNumber", booking.getTicketNumber());
         notificationServiceClient.sendCancellationRequest(request);
     }
-    
+
     private void sendBookingCancelledNotification(Booking booking) {
         Map<String, Object> request = new java.util.HashMap<>();
         request.put("customerEmail", booking.getCustomerEmail());
@@ -521,7 +529,7 @@ public class BookingService {
         request.put("refundAmount", booking.getRefundAmount());
         notificationServiceClient.sendBookingCancelled(request);
     }
-    
+
     private void sendAdminNewBookingNotification(Booking booking) {
         Map<String, Object> request = new java.util.HashMap<>();
         request.put("bookingId", booking.getId());

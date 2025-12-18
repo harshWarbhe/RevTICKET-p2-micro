@@ -16,6 +16,7 @@
     "@angular/compiler": "^18.0.0",
     "@angular/forms": "^18.0.0",
     "@angular/platform-browser": "^18.0.0",
+    "@angular/platform-browser-dynamic": "^18.0.0",
     "@angular/router": "^18.0.0",
     "@stomp/stompjs": "^7.2.1",
     "html2canvas": "^1.4.1",

@@ -3,7 +3,6 @@ package com.revticket.settings.service;
 import com.revticket.settings.dto.SettingsDTO;
 import com.revticket.settings.entity.Settings;
 import com.revticket.settings.repository.SettingsRepository;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;

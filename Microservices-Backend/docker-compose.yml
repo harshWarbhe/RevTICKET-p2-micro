@@ -22,7 +22,7 @@ services:
       - revticket-network
 
   mongodb:
-    image: mongo:latest
+    image: mongo:8.0
     ports:
       - "27017:27017"
     volumes:
@@ -54,6 +54,18 @@ services:
       - DASHBOARD_SERVICE_URI=http://dashboard-service:8091
     depends_on:
       - consul
+    networks:
+      - revticket-network
+
+  frontend:
+    build:
+      context: ../Frontend
+      dockerfile: Dockerfile
+    container_name: frontend
+    ports:
+      - "4200:4200"
+    depends_on:
+      - api-gateway
     networks:
       - revticket-network
 
