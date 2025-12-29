@@ -49,7 +49,8 @@ class BookingServiceTest {
     @InjectMocks
     private BookingService bookingService;
 
-    private io.jsonwebtoken.security.Keys keys; // not used directly but good to have context if needed
+    // private io.jsonwebtoken.security.Keys keys; // not used directly but good to
+    // have context if needed
 
     @BeforeEach
     void setUp() {

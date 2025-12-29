@@ -1,6 +1,7 @@
 # RevTicket Project - Interview Preparation Guide
 
 ## 📋 Project Overview
+
 **RevTicket** is a microservices-based movie ticket booking platform with 12 microservices, built using Spring Boot and Angular.
 
 ---
@@ -8,6 +9,7 @@
 ## 🛠️ Tech Stack & Versions
 
 ### Frontend
+
 - **Angular**: 18.0.0
 - **TypeScript**: 5.4.0
 - **RxJS**: 7.8.0
@@ -17,6 +19,7 @@
 - **QR Code**: qrcode 1.5.4
 
 ### Backend
+
 - **Spring Boot**: 3.2.0
 - **Java**: 17
 - **Spring Cloud**: 2023.0.0
@@ -26,10 +29,12 @@
 - **Lombok**: 1.18.36
 
 ### Databases
+
 - **MySQL**: 8.0 (for transactional data)
 - **MongoDB**: 8.0 (for reviews and notifications)
 
 ### Infrastructure
+
 - **Service Discovery**: Consul 1.15
 - **API Gateway**: Spring Cloud Gateway
 - **Containerization**: Docker
@@ -40,6 +45,7 @@
 ## 🏗️ Architecture
 
 ### Microservices (12 Services)
+
 1. **API Gateway** (Port 8080) - Entry point, routing
 2. **User Service** (Port 8081) - Authentication, user management
 3. **Movie Service** (Port 8082) - Movie catalog
@@ -57,6 +63,67 @@
 
 ## 💡 Core Concepts Explained
 
+### Framework Libraries Used
+
+Frontend (Angular 18.0.0)
+Core Angular Libraries:
+
+@angular/core - Core Angular framework functionality
+
+@angular/common - Common directives, pipes, and services
+
+@angular/forms - Reactive and template-driven forms
+
+@angular/router - Client-side navigation and routing
+
+@angular/platform-browser - DOM manipulation and browser APIs
+
+## Additional Libraries:
+
+rxjs (7.8.0) - Reactive programming with Observables
+
+@stomp/stompjs (7.2.1) - WebSocket communication for real-time notifications
+
+sockjs-client (1.6.1) - WebSocket fallback support
+
+jspdf (3.0.4) - PDF generation for tickets
+
+html2canvas (1.4.1) - Screenshot functionality for PDF generation
+
+qrcode (1.5.4) - QR code generation for e-tickets
+
+## Backend (Spring Boot 3.2.0)
+
+Core Spring Libraries:
+
+spring-boot-starter-web - REST API development with embedded Tomcat
+
+spring-boot-starter-data-jpa - JPA/Hibernate for database operations
+
+spring-boot-starter-security - Authentication and authorization
+
+spring-boot-starter-validation - Bean validation
+
+## Microservices Libraries:
+
+spring-cloud-starter-consul-discovery - Service discovery with Consul
+
+spring-cloud-starter-gateway - API Gateway routing
+
+spring-cloud-starter-openfeign - Inter-service communication
+
+spring-cloud-starter-circuitbreaker-resilience4j - Fault tolerance
+
+## Database & Security:
+
+mysql-connector-j - MySQL database connectivity
+
+spring-boot-starter-data-mongodb - MongoDB operations
+
+io.jsonwebtoken (0.12.3) - JWT token generation and validation
+
+lombok (1.18.36) - Boilerplate code reduction
+
 ### 1. Spring Data JPA / Hibernate
 
 **Spring Data JPA** is a Spring framework module that simplifies database operations by providing repository abstractions.
@@ -66,11 +133,13 @@
 **ORM** maps Java objects to database tables automatically.
 
 **Differences:**
+
 - **JPA**: Specification/Interface (javax.persistence)
 - **Spring Data JPA**: Spring's implementation with repository pattern
 - **Hibernate**: Actual ORM implementation
 
 **In Your Project:**
+
 ```java
 // Entity
 @Entity
@@ -79,7 +148,7 @@ public class User {
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
     private String id;
-    
+
     @Column(nullable = false, unique = true)
     private String email;
 }
@@ -95,12 +164,14 @@ public interface UserRepository extends JpaRepository<User, String> {
 ### 2. MongoDB Implementation
 
 **Why Both MySQL and MongoDB?**
+
 - **MySQL**: Transactional data (users, bookings, payments) - ACID compliance needed
 - **MongoDB**: Reviews, notifications - flexible schema, high read/write throughput
 
 **Data Format in MongoDB**: BSON (Binary JSON)
 
 **Creating Collections & Relationships:**
+
 ```java
 // Entity
 @Document(collection = "reviews")
@@ -129,6 +200,7 @@ public interface ReviewRepository extends MongoRepository<Review, String> {
 ## 🔐 JWT Authentication Flow
 
 ### Implementation:
+
 1. **User Login** → AuthController receives credentials
 2. **Validation** → AuthService validates via UserRepository
 3. **Token Generation** → JwtUtil creates JWT token
@@ -151,8 +223,8 @@ public String generateToken(String email, String role) {
 // Filter validates every request
 @Component
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
-    protected void doFilterInternal(HttpServletRequest request, 
-                                   HttpServletResponse response, 
+    protected void doFilterInternal(HttpServletRequest request,
+                                   HttpServletResponse response,
                                    FilterChain filterChain) {
         String token = extractToken(request);
         if (token != null && jwtUtil.validateToken(token)) {
@@ -170,6 +242,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 ### Example: User Profile Update
 
 1. **Frontend (Angular)**:
+
 ```typescript
 // Service
 updateProfile(userData: any): Observable<any> {
@@ -186,6 +259,7 @@ onSubmit() {
 2. **API Gateway**: Routes request to User Service
 
 3. **User Service Controller**:
+
 ```java
 @PutMapping("/profile")
 public ResponseEntity<UserDto> updateProfile(
@@ -197,6 +271,7 @@ public ResponseEntity<UserDto> updateProfile(
 ```
 
 4. **Service Layer**:
+
 ```java
 public UserDto updateProfile(String userId, UserDto userDto) {
     User user = userRepository.findById(userId)
@@ -209,6 +284,7 @@ public UserDto updateProfile(String userId, UserDto userDto) {
 ```
 
 5. **Repository Layer**:
+
 ```java
 public interface UserRepository extends JpaRepository<User, String> {
     // save() method inherited from JpaRepository
@@ -216,6 +292,7 @@ public interface UserRepository extends JpaRepository<User, String> {
 ```
 
 6. **Hibernate/JPA**: Generates SQL and executes
+
 ```sql
 UPDATE users SET name=?, phone=? WHERE id=?
 ```
@@ -225,6 +302,7 @@ UPDATE users SET name=?, phone=? WHERE id=?
 ## 🎯 Java Concepts
 
 ### 1. ArrayList - Remove Duplicates
+
 ```java
 // Method 1: Using LinkedHashSet
 List<String> list = new ArrayList<>(Arrays.asList("A", "B", "A", "C"));
@@ -239,30 +317,35 @@ List<String> unique = list.stream()
 ### 2. Collections Framework
 
 **Interfaces Familiar:**
+
 - **List**: ArrayList, LinkedList, Vector
 - **Set**: HashSet, LinkedHashSet, TreeSet
 - **Map**: HashMap, LinkedHashMap, TreeMap
 - **Queue**: PriorityQueue, LinkedList
 
 ### 3. ArrayList vs Vector
-| ArrayList | Vector |
-|-----------|--------|
-| Not synchronized | Synchronized |
-| Fast | Slower |
-| Grows by 50% | Grows by 100% |
-| Not thread-safe | Thread-safe |
+
+| ArrayList        | Vector        |
+| ---------------- | ------------- |
+| Not synchronized | Synchronized  |
+| Fast             | Slower        |
+| Grows by 50%     | Grows by 100% |
+| Not thread-safe  | Thread-safe   |
 
 ### 4. Map & Set
+
 - **Map**: Key-value pairs (HashMap, TreeMap)
 - **Set**: Unique elements (HashSet, TreeSet)
 
 ### 5. Java 8 Features Used
+
 - **Lambda Expressions**: `list.forEach(item -> System.out.println(item))`
 - **Stream API**: `list.stream().filter().map().collect()`
 - **Optional**: `Optional<User> user = userRepository.findById(id)`
 - **Method References**: `list.forEach(System.out::println)`
 
 ### 6. OOP - Inheritance Scenario
+
 ```java
 // Can we override static methods? NO
 // Static methods are hidden, not overridden
@@ -279,19 +362,20 @@ List<String> unique = list.stream()
 ## 🌐 Angular Implementation
 
 ### 1. Form Creation & Validation
+
 ```typescript
 // Component
 export class SignupComponent {
   signupForm: FormGroup;
-  
+
   constructor(private fb: FormBuilder) {
     this.signupForm = this.fb.group({
-      name: ['', [Validators.required, Validators.minLength(3)]],
-      email: ['', [Validators.required, Validators.email]],
-      password: ['', [Validators.required, Validators.minLength(6)]]
+      name: ["", [Validators.required, Validators.minLength(3)]],
+      email: ["", [Validators.required, Validators.email]],
+      password: ["", [Validators.required, Validators.minLength(6)]],
     });
   }
-  
+
   onSubmit() {
     if (this.signupForm.valid) {
       this.authService.signup(this.signupForm.value).subscribe();
@@ -304,7 +388,9 @@ export class SignupComponent {
 <!-- Template -->
 <form [formGroup]="signupForm" (ngSubmit)="onSubmit()">
   <input formControlName="name" />
-  <div *ngIf="signupForm.get('name')?.invalid && signupForm.get('name')?.touched">
+  <div
+    *ngIf="signupForm.get('name')?.invalid && signupForm.get('name')?.touched"
+  >
     Name is required
   </div>
   <button [disabled]="signupForm.invalid">Submit</button>
@@ -319,6 +405,7 @@ export class SignupComponent {
 **Two-Way Binding**: `[(ngModel)]="searchQuery"`
 
 ### 3. REST API Return Types
+
 - **ResponseEntity<T>**: Full control over HTTP response
 - **@ResponseBody**: Automatic JSON conversion
 - **String, Object, List**: Direct return
@@ -328,10 +415,11 @@ export class SignupComponent {
 ## ⚠️ Exception Handling
 
 ### 1. Java Exception Handling
+
 ```java
 @RestControllerAdvice
 public class GlobalExceptionHandler {
-    
+
     @ExceptionHandler(BadCredentialsException.class)
     public ResponseEntity<Map<String, Object>> handleBadCredentials(BadCredentialsException ex) {
         Map<String, Object> error = new HashMap<>();
@@ -339,7 +427,7 @@ public class GlobalExceptionHandler {
         error.put("message", "Invalid email or password");
         return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(error);
     }
-    
+
     @ExceptionHandler(RuntimeException.class)
     public ResponseEntity<Map<String, Object>> handleRuntimeException(RuntimeException ex) {
         Map<String, Object> error = new HashMap<>();
@@ -350,21 +438,26 @@ public class GlobalExceptionHandler {
 ```
 
 ### 2. Microservices Error Handling
+
 - **Circuit Breaker**: Resilience4j for fault tolerance
 - **Fallback Methods**: Return default response on service failure
 - **Global Exception Handler**: Centralized error handling
 - **API Gateway**: Catches and formats errors
 
 ### 3. SQL Exception in Angular
+
 ```typescript
 // Error Interceptor
 @Injectable()
 export class ErrorInterceptor implements HttpInterceptor {
-  intercept(req: HttpRequest<any>, next: HttpHandler): Observable<HttpEvent<any>> {
+  intercept(
+    req: HttpRequest<any>,
+    next: HttpHandler
+  ): Observable<HttpEvent<any>> {
     return next.handle(req).pipe(
       catchError((error: HttpErrorResponse) => {
         if (error.status === 500) {
-          this.alertService.error('Database error occurred');
+          this.alertService.error("Database error occurred");
         }
         return throwError(() => error);
       })
@@ -378,6 +471,7 @@ export class ErrorInterceptor implements HttpInterceptor {
 ## 🚀 Service Discovery (Consul)
 
 ### Implementation:
+
 1. **Consul Server** runs on port 8500
 2. **Each microservice** registers itself with Consul on startup
 3. **Service Discovery**: Services find each other via Consul
@@ -400,6 +494,7 @@ spring:
 ## ☁️ AWS Deployment
 
 ### Deployment Strategy:
+
 1. **Docker Images**: Build images for each service
 2. **ECR**: Push images to AWS Elastic Container Registry
 3. **ECS/EKS**: Deploy containers
@@ -413,17 +508,20 @@ spring:
 ## 📡 API Endpoints Examples
 
 ### User Service:
+
 - `POST /api/auth/signup` - Register user
 - `POST /api/auth/login` - Login
 - `GET /api/users/profile` - Get profile
 - `PUT /api/users/profile` - Update profile
 
 ### Movie Service:
+
 - `GET /api/movies` - List movies
 - `GET /api/movies/{id}` - Movie details
 - `POST /api/movies` - Add movie (Admin)
 
 ### Booking Service:
+
 - `POST /api/bookings` - Create booking
 - `GET /api/bookings/user` - User bookings
 - `GET /api/bookings/{id}` - Booking details
@@ -433,6 +531,7 @@ spring:
 ## 🔗 Backend to Frontend Integration
 
 1. **Proxy Configuration** (proxy.conf.json):
+
 ```json
 {
   "/api": {
@@ -443,13 +542,14 @@ spring:
 ```
 
 2. **HTTP Service**:
+
 ```typescript
 @Injectable()
 export class MovieService {
-  private apiUrl = '/api/movies';
-  
+  private apiUrl = "/api/movies";
+
   constructor(private http: HttpClient) {}
-  
+
   getMovies(): Observable<Movie[]> {
     return this.http.get<Movie[]>(this.apiUrl);
   }
@@ -457,14 +557,15 @@ export class MovieService {
 ```
 
 3. **Token Interceptor**:
+
 ```typescript
 @Injectable()
 export class TokenInterceptor implements HttpInterceptor {
   intercept(req: HttpRequest<any>, next: HttpHandler) {
-    const token = localStorage.getItem('token');
+    const token = localStorage.getItem("token");
     if (token) {
       req = req.clone({
-        setHeaders: { Authorization: `Bearer ${token}` }
+        setHeaders: { Authorization: `Bearer ${token}` },
       });
     }
     return next.handle(req);
@@ -477,13 +578,14 @@ export class TokenInterceptor implements HttpInterceptor {
 ## 📊 SQL Relationships in Entities
 
 ### One-to-Many Example:
+
 ```java
 // Theater Entity
 @Entity
 public class Theater {
     @Id
     private String id;
-    
+
     @OneToMany(mappedBy = "theater", cascade = CascadeType.ALL)
     private List<Screen> screens;
 }
@@ -493,7 +595,7 @@ public class Theater {
 public class Screen {
     @Id
     private String id;
-    
+
     @ManyToOne
     @JoinColumn(name = "theater_id")
     private Theater theater;
@@ -501,12 +603,13 @@ public class Screen {
 ```
 
 ### Many-to-Many Example:
+
 ```java
 @Entity
 public class Movie {
     @Id
     private String id;
-    
+
     @ManyToMany
     @JoinTable(
         name = "movie_genre",
@@ -522,30 +625,37 @@ public class Movie {
 ## 🎬 Project Implementation Layers
 
 ### 1. Entity Layer
+
 - JPA entities with annotations
 - Database table mapping
 
 ### 2. Repository Layer
+
 - Extends JpaRepository/MongoRepository
 - Custom query methods
 
 ### 3. Service Layer
+
 - Business logic
 - Transaction management
 
 ### 4. Controller Layer
+
 - REST endpoints
 - Request/Response handling
 
 ### 5. DTO Layer
+
 - Data transfer objects
 - Decouples entities from API
 
 ### 6. Security Layer
+
 - JWT authentication
 - Authorization filters
 
 ### 7. Exception Layer
+
 - Global exception handling
 - Custom exceptions
 
@@ -554,6 +664,7 @@ public class Movie {
 ## 🔧 Spring Boot Dependencies
 
 **Core Dependencies:**
+
 - spring-boot-starter-web
 - spring-boot-starter-data-jpa
 - spring-boot-starter-data-mongodb
@@ -571,6 +682,7 @@ public class Movie {
 ## 📝 Key Interview Points
 
 ### Project Highlights:
+
 1. **Microservices Architecture** with 12 independent services
 2. **Polyglot Persistence**: MySQL + MongoDB
 3. **Service Discovery**: Consul for dynamic service registration
@@ -583,6 +695,7 @@ public class Movie {
 10. **Payment Integration**: Razorpay
 
 ### Why This Architecture?
+
 - **Scalability**: Each service scales independently
 - **Maintainability**: Separate codebases, easier to manage
 - **Technology Diversity**: Use best tool for each service
@@ -594,6 +707,7 @@ public class Movie {
 ## 🎯 Common Coding Questions
 
 ### HashMap Example:
+
 ```java
 // Remove duplicates using HashMap
 Map<String, Integer> map = new HashMap<>();
@@ -605,6 +719,7 @@ List<String> unique = new ArrayList<>(map.keySet());
 ```
 
 ### Stream API Example:
+
 ```java
 // Filter and collect
 List<Movie> popularMovies = movies.stream()

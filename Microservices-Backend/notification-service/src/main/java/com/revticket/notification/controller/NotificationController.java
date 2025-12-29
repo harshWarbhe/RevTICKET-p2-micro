@@ -102,6 +102,13 @@ public class NotificationController {
             request.setCustomerName((String) requestMap.get("customerName"));
             request.setCustomerEmail((String) requestMap.get("customerEmail"));
             request.setTicketNumber((String) requestMap.get("ticketNumber"));
+            request.setMovieTitle((String) requestMap.get("movieTitle"));
+            request.setTheaterName((String) requestMap.get("theaterName"));
+            request.setScreenName((String) requestMap.get("screenName"));
+            request.setShowDateTime((String) requestMap.get("showDateTime"));
+            if (requestMap.get("seats") instanceof java.util.List) {
+                request.setSeats((java.util.List<String>) requestMap.get("seats"));
+            }
             if (requestMap.get("totalAmount") != null) {
                 request.setTotalAmount(((Number) requestMap.get("totalAmount")).doubleValue());
             }

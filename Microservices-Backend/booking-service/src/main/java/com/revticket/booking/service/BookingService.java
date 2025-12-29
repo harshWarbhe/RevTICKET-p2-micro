@@ -537,6 +537,62 @@ public class BookingService {
         request.put("customerEmail", booking.getCustomerEmail());
         request.put("ticketNumber", booking.getTicketNumber());
         request.put("totalAmount", booking.getTotalAmount());
+        // Use seat labels if available, otherwise use seat IDs
+        if (booking.getSeatLabels() != null && !booking.getSeatLabels().isEmpty()) {
+            request.put("seats", booking.getSeatLabels());
+        } else {
+            request.put("seats", booking.getSeats());
+        }
+
+        // Fetch movie and theater details for admin notification
+        try {
+            ShowtimeDTO showtimeDTO = showtimeServiceClient.getShowtimeById(booking.getShowtimeId());
+            if (showtimeDTO != null) {
+                request.put("showDateTime", showtimeDTO.getShowDateTime());
+
+                // Get movie details
+                if (showtimeDTO.getMovieId() != null) {
+                    try {
+                        MovieDTO movieDTO = movieServiceClient.getMovieById(showtimeDTO.getMovieId());
+                        if (movieDTO != null) {
+                            request.put("movieTitle", movieDTO.getTitle());
+                        }
+                    } catch (Exception e) {
+                        request.put("movieTitle", "Movie Info Unavailable");
+                    }
+                }
+
+                // Get theater details
+                if (showtimeDTO.getTheaterId() != null) {
+                    try {
+                        TheaterDTO theaterDTO = theaterServiceClient.getTheaterById(showtimeDTO.getTheaterId());
+                        if (theaterDTO != null) {
+                            request.put("theaterName", theaterDTO.getName());
+                        }
+                    } catch (Exception e) {
+                        request.put("theaterName", "Theater Info Unavailable");
+                    }
+                }
+
+                // Get screen details
+                if (showtimeDTO.getScreen() != null) {
+                    try {
+                        Map<String, Object> screenData = theaterServiceClient.getScreenById(showtimeDTO.getScreen());
+                        if (screenData != null && screenData.containsKey("name")) {
+                            request.put("screenName", screenData.get("name"));
+                        } else {
+                            request.put("screenName", "Screen " + showtimeDTO.getScreen().substring(0,
+                                    Math.min(8, showtimeDTO.getScreen().length())));
+                        }
+                    } catch (Exception e) {
+                        request.put("screenName", "Screen Info Unavailable");
+                    }
+                }
+            }
+        } catch (Exception e) {
+            System.out.println("Failed to fetch booking details for admin notification: " + e.getMessage());
+        }
+
         notificationServiceClient.sendAdminNewBooking(request);
     }
 }
